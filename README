@@ -1,0 +1,6 @@
+
+install node
+
+npm install
+gem install foreman
+foreman start
