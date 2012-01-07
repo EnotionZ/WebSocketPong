@@ -6,10 +6,6 @@
 	var $container = $("#container");
 	var $ball = $("#ball");
 
-	var LEFT = 37, RIGHT = 39, UP = 38, DOWN = 40;
-
-	var vel = 5;
-
 	var offset = $container.offset();
 	var cLeft = offset.left;
 	var cTop = offset.top;
@@ -23,6 +19,8 @@
 		init: function(opts) {
 			var self = this;
 
+			self.paddleSize = 50;
+
 			self.id = opts.id;
 			self.pos = opts.pos;
 			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
@@ -33,11 +31,17 @@
 			self.render();
 		},
 		movePaddle: function(info) {
-			var self = this;
+			var self = this, position;
 			if(self.orientation === "horizontal") {
-				self.$paddle.css("left", info.left);
+				position = info.left - self.paddleSize/2;
+				if(position < 0) position = 0;
+				else if(position > 550) position = 550;
+				self.$paddle.css("left", position);
 			} else {
-				self.$paddle.css("top", info.top);
+				position = info.top - self.paddleSize/2;
+				if(position < 0) position = 0;
+				else if(position > 550) position = 550;
+				self.$paddle.css("top", position);
 			}
 		},
 		registerPublisher: function() {

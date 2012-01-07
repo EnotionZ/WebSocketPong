@@ -35,7 +35,7 @@ body {
 
 .paddle {
 	position: absolute; 
-	border: 1px solid #000;
+	outline: 1px solid #000;
 }
 .player-horizontal .paddle { width: 50px; height: 12px; }
 .player-vertical .paddle { width: 12px; height: 50px; }
