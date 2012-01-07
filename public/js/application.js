@@ -6,6 +6,7 @@
 	var $container = $("#container");
 	var $ball = $("#ball");
 
+	var boardWidth = 600;
 	var offset = $container.offset();
 	var cLeft = offset.left;
 	var cTop = offset.top;
@@ -19,7 +20,8 @@
 		init: function(opts) {
 			var self = this;
 
-			self.paddleSize = 50;
+			self.paddleSize = 100;
+			self.paddleHeight = 12;
 
 			self.id = opts.id;
 			self.pos = opts.pos;
@@ -30,20 +32,29 @@
 
 			self.render();
 		},
+
+		/**
+		 * Processing a subscribed mouse event triggered by one of the players
+		 */
 		movePaddle: function(info) {
 			var self = this, position;
+			var maxPos = boardWidth-self.paddleSize - self.paddleHeight;
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
-				if(position < 0) position = 0;
-				else if(position > 550) position = 550;
+				if(position < self.paddleHeight) position = self.paddleHeight;
+				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("left", position);
 			} else {
 				position = info.top - self.paddleSize/2;
-				if(position < 0) position = 0;
-				else if(position > 550) position = 550;
+				if(position < self.paddleHeight) position = self.paddleHeight;
+				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("top", position);
 			}
 		},
+
+		/**
+		 * Makes the current user a player by allowing them to publish mouse movements
+		 */
 		registerPublisher: function() {
 			var id = this.id;
 
@@ -56,9 +67,9 @@
 				client.publish('/coord', {id: id, left: left, top: top});
 			});
 		},
-		setLabel: function(str) {
-			this.$name.html(str);
-		},
+		
+		setLabel: function(str) { this.$name.html(str); },
+
 		render: function() {
 			this.$paddle = $("<div/>").addClass("paddle");
 			this.$name = $("<span/>").addClass("name-label");
@@ -118,6 +129,7 @@
 				self.showSpectatorNotice();
 			}
 		},
+
 		showSpectatorNotice: function() {
 			$("<div/>")
 				.addClass("spectator-notice")
