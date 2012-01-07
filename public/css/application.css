@@ -24,24 +24,32 @@ body {
 	border-radius: 10px;
 }
 
-.bar {
-	position: absolute; 
-	border: 1px solid #000;
-}
-.bar-horizontal { width: 50px; height: 12px; }
-.bar-vertical { width: 12px; height: 50px; }
-#bar1 { top: 0; left: 275px; background: red; }
-#bar2 { right: 0; top: 275px; background: green; }
-#bar3 { bottom: 0; left: 275px; background: blue; }
-#bar4 { left: 0; top: 275px; background: yellow; }
 
 .player { position: absolute; }
 .player-horizontal { width: 100%; text-align: center; }
-.player-vertical { top: 50%; }
-#player1 { top: -30px; }
-#player2 { right: -150px; }
-#player3 { bottom: -30px; }
-#player4 { left: -150px; }
+.player-vertical { height: 100%; }
+#player1 {}
+#player2 { right: 0; }
+#player3 { bottom: 0; }
+#player4 {}
+
+.paddle {
+	position: absolute; 
+	border: 1px solid #000;
+}
+.player-horizontal .paddle { width: 50px; height: 12px; }
+.player-vertical .paddle { width: 12px; height: 50px; }
+#player1 .paddle { top: 0; left: 275px; background: red; }
+#player2 .paddle { right: 0; top: 275px; background: green; }
+#player3 .paddle { bottom: 0; left: 275px; background: blue; }
+#player4 .paddle { left: 0; top: 275px; background: yellow; }
+
+.name-label { position: relative; color: #fff; }
+.player-vertical .name-label { top: 50%; position: absolute; }
+#player1 .name-label { top: -30px; }
+#player2 .name-label { right: -75px; }
+#player3 .name-label { bottom: -30px; }
+#player4 .name-label { left: -75px; }
 
 
 .spectator-notice {
@@ -52,8 +60,10 @@ body {
 	background: #000;
 	opacity: .8;
 	color: #fff;
+	cursor: pointer;
 }
 .spectator-notice span {
+	cursor: pointer;
 	text-align: center;
 	position: absolute; top: 50%;
 	width: 100%;
