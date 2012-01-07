@@ -17,7 +17,9 @@ body {
 }
 
 #container {
-	margin: 40px auto 0;
+	position: absolute;
+	left: 50%; top: 50%;
+	margin: -264px 0 0 -300px;
 	background: #fff;
 	width: 600px;
 	height: 600px;

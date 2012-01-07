@@ -1,15 +1,7 @@
 (function($){
 
 	var client = new Faye.Client('/faye', { timeout: 120 });
-
 	var $body = $("body");
-	var $container = $("#container");
-	var $ball = $("#ball");
-
-	var boardWidth = 600;
-	var offset = $container.offset();
-	var cLeft = offset.left;
-	var cTop = offset.top;
 
 
 	/**
@@ -38,7 +30,7 @@
 		 */
 		movePaddle: function(info) {
 			var self = this, position;
-			var maxPos = boardWidth-self.paddleSize - self.paddleHeight;
+			var maxPos = gc.boardWidth-self.paddleSize - self.paddleHeight;
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
 				if(position < self.paddleHeight) position = self.paddleHeight;
@@ -61,8 +53,8 @@
 			this.setLabel("YOU");
 
 			$body.mousemove(function(e) {
-				var left = e.clientX-cLeft;
-				var top = e.clientY-cTop;
+				var left = e.clientX-gc.cLeft;
+				var top = e.clientY-gc.cTop;
 
 				client.publish('/coord', {id: id, left: left, top: top});
 			});
@@ -76,7 +68,7 @@
 			this.setLabel("Player: "+this.pos);
 
 			this.el = $("<div/>")
-			.appendTo($container)
+			.appendTo(gc.$board)
 			.append(this.$paddle, this.$name)
 			.addClass("player player-" + this.orientation)
 			.attr("id", "player"+this.pos);
@@ -94,6 +86,11 @@
 		init: function(opts) {
 			var self = this;
 
+			self.boardWidth = 600;
+			self.$board = $("#container");
+			self.$ball = $("#ball");
+			self.setOffset();
+
 			self.players = {};
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
@@ -103,6 +100,17 @@
 			},100);
 
 			client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
+
+			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		/**
+		 * Fixes the offset for position setting in case the window was resized
+		 */
+		setOffset: function() {
+			var offset = this.$board.offset();
+			this.cLeft = offset.left;
+			this.cTop = offset.top;
 		},
 
 		subscribedMovement: function(info) {
