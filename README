@@ -1,5 +1,5 @@
 
-install node
+install node 0.4.x
 
 npm install
 gem install foreman
