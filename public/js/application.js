@@ -16,17 +16,29 @@
 			self.paddleSize = 100;
 			self.paddleHeight = 12;
 
+			self.wallColor = "#ccc";
+
 			self.id = opts.id;
 			self.pos = opts.pos;
 			self.name = opts.name;
+			self.coord = {left: 250, top: 250};
 			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
-
-			self.el = $("#bar"+self.pos);
-			self.$name = $("#player"+self.pos);
 
 			self.render();
 
 			if(self.name) self.setLabel(self.name);
+		},
+
+		blinkPaddle: function() {
+			var self = this;
+			self.$paddle.css("background-color","#000");
+			setTimeout(function() { self.$paddle.css("background-color", self.color); }, 100);
+		},
+
+		blinkWall: function() {
+			var self = this;
+			self.el.css("background-color","#000");
+			setTimeout(function() { self.el.css("background-color", self.wallColor); }, 100);
 		},
 
 		/**
@@ -35,16 +47,23 @@
 		movePaddle: function(info) {
 			var self = this, position;
 			var maxPos = gc.boardWidth-self.paddleSize;
+
+			var coord = self.coord;
+			self.coord.left = info.left;
+			self.coord.top = info.top;
+
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
 				if(position < 0) position = 0;
 				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("left", position);
+				coord.left = position;
 			} else {
 				position = info.top - self.paddleSize/2;
 				if(position < 0) position = 0;
 				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("top", position);
+				coord.top = position;
 			}
 		},
 
@@ -52,6 +71,7 @@
 		 * Makes the current user a player by allowing them to publish mouse movements
 		 */
 		registerPublisher: function() {
+			var self = this;
 			var pos = this.pos-1;
 			var id = this.id;
 
@@ -63,7 +83,6 @@
 				var info = {pos: pos, id: id, left: left, top: top};
 
 				client.publish('/coord', info);
-				gc.subscribedMovement(info, true);
 			});
 		},
 		
@@ -79,6 +98,8 @@
 			.append(this.$paddle, this.$name)
 			.addClass("player player-" + this.orientation)
 			.attr("id", "player"+this.pos);
+
+			this.color = this.$paddle.css("background-color");
 		}
 	};
 
@@ -101,6 +122,7 @@
 			self.ballData = {};
 
 			self.players = {};
+			self.playersArr = [];
 			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
@@ -130,13 +152,43 @@
 			bd.x = bd.x+bd.incX;
 			bd.y = bd.y+bd.incY;
 
-			if(bd.x < 0) bd.incX = Math.abs(bd.incX);
-			if(bd.x > self.boardWidth-self.ballSize) bd.incX = -Math.abs(bd.incX);
+			if(bd.x < 0) {
+				bd.incX = Math.abs(bd.incX);
+				self.checkContact(self.getPlayer(3), bd.y);
+			} else if(bd.x > self.boardWidth-self.ballSize) {
+				bd.incX = -Math.abs(bd.incX);
+				self.checkContact(self.getPlayer(1), bd.y);
+			}
 
-			if(bd.y < 0) bd.incY = Math.abs(bd.incY);
-			if(bd.y > self.boardWidth-self.ballSize) bd.incY = -Math.abs(bd.incY);
+			if(bd.y < 0) {
+				bd.incY = Math.abs(bd.incY);
+				self.checkContact(self.getPlayer(0), bd.x);
+			} if(bd.y > self.boardWidth-self.ballSize) {
+				bd.incY = -Math.abs(bd.incY);
+				self.checkContact(self.getPlayer(2), bd.x);
+			}
 			self.$ball.css({left: bd.x, top: bd.y});
 		},
+
+		checkContact: function(player, ballPos) {
+			var paddlePos;
+			if(player.pos === 1 || player.pos === 3) {
+				paddlePos = player.coord.left;
+			} else {
+				paddlePos = player.coord.top;
+			}
+
+			if(this._checkContact(player, paddlePos, ballPos)) {
+				player.blinkPaddle();
+			} else {
+				player.blinkWall();
+			}
+		},
+		_checkContact: function(player, paddlePos, ballPos) {
+			return ballPos > paddlePos && ballPos+this.ballSize < paddlePos + player.paddleSize;
+		},
+
+		getPlayer: function(pos) { return this.players[this.playersArr[pos]]; },
 
 		showNameInput: function() {
 			var self = this;
@@ -166,9 +218,6 @@
 		},
 
 		subscribedMovement: function(info, forced) {
-			// allows current player's view to update without coming from subscription
-			if(!forced && info.id === self.id) return; 
-
 			this.players[info.id].movePaddle({ left: info.left, top: info.top });
 		},
 
@@ -191,6 +240,7 @@
 
 				// Registers a player on the board only if they haven't yet
 				if(!self.players[id]) {
+					self.playersArr.push(id);
 					self.players[id] = new PlayerController({id: id, pos: i+1, name: name});
 
 					// If the current paddle's ID matches the subscriber, make user a publisher
