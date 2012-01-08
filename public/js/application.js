@@ -99,7 +99,8 @@
 			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
-			client.subscribe('/join', function(param) { self.userJoined(param); });
+			client.subscribe('/join', function(info) { self.userJoined(info); });
+			client.subscribe('/ball', function(info) { self.updateBall(info); });
 			client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
 
 			self.showNameInput();
@@ -107,6 +108,10 @@
 			self.$spectators = $("#spectators");
 			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
 			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		updateBall: function(info) {
+			this.$ball.css(info);
 		},
 
 		showNameInput: function() {
