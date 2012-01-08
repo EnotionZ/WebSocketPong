@@ -94,9 +94,11 @@
 			var self = this;
 
 			self.boardWidth = 600;
+			self.ballSize = 20;
 			self.$board = $("#container");
 			self.$ball = $("#ball");
 			self.setOffset();
+			self.ballData = {};
 
 			self.players = {};
 			self.specsArr = [];
@@ -115,7 +117,25 @@
 
 		updateBall: function(info) {
 			var self = this;
-			self.$ball.css(info);
+
+			self.ballData = info;
+			clearTimeout(self.ballmoveTimer);
+			self.ballmoveTimer = setInterval(function(){ self.moveBall(); }, 20);
+		},
+
+		moveBall: function() {
+			var self = this;
+			var bd = self.ballData;
+
+			bd.x = bd.x+bd.incX;
+			bd.y = bd.y+bd.incY;
+
+			if(bd.x < 0) bd.incX = Math.abs(bd.incX);
+			if(bd.x > self.boardWidth-self.ballSize) bd.incX = -Math.abs(bd.incX);
+
+			if(bd.y < 0) bd.incY = Math.abs(bd.incY);
+			if(bd.y > self.boardWidth-self.ballSize) bd.incY = -Math.abs(bd.incY);
+			self.$ball.css({left: bd.x, top: bd.y});
 		},
 
 		showNameInput: function() {
