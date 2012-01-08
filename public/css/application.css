@@ -104,4 +104,7 @@ body {
 	bottom: 20px;
 	background: #ddd;
 	font: 500 11px arial;
+	list-style-type: decimal;
+	list-style-position: inside;
+	padding: 6px;
 }
