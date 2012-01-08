@@ -34,15 +34,15 @@
 		 */
 		movePaddle: function(info) {
 			var self = this, position;
-			var maxPos = gc.boardWidth-self.paddleSize - self.paddleHeight;
+			var maxPos = gc.boardWidth-self.paddleSize;
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
-				if(position < self.paddleHeight) position = self.paddleHeight;
+				if(position < 0) position = 0;
 				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("left", position);
 			} else {
 				position = info.top - self.paddleSize/2;
-				if(position < self.paddleHeight) position = self.paddleHeight;
+				if(position < 0) position = 0;
 				else if(position > maxPos) position = maxPos;
 				self.$paddle.css("top", position);
 			}
@@ -52,6 +52,7 @@
 		 * Makes the current user a player by allowing them to publish mouse movements
 		 */
 		registerPublisher: function() {
+			var pos = this.pos-1;
 			var id = this.id;
 
 			this.setLabel("YOU");
@@ -59,8 +60,10 @@
 			$html.mousemove(function(e) {
 				var left = e.clientX-gc.cLeft;
 				var top = e.clientY-gc.cTop;
+				var info = {pos: pos, id: id, left: left, top: top};
 
-				client.publish('/coord', {id: id, left: left, top: top});
+				client.publish('/coord', info);
+				gc.subscribedMovement(info, true);
 			});
 		},
 		
@@ -111,7 +114,8 @@
 		},
 
 		updateBall: function(info) {
-			this.$ball.css(info);
+			var self = this;
+			self.$ball.css(info);
 		},
 
 		showNameInput: function() {
@@ -141,7 +145,10 @@
 			this.cTop = offset.top;
 		},
 
-		subscribedMovement: function(info) {
+		subscribedMovement: function(info, forced) {
+			// allows current player's view to update without coming from subscription
+			if(!forced && info.id === self.id) return; 
+
 			this.players[info.id].movePaddle({ left: info.left, top: info.top });
 		},
 
