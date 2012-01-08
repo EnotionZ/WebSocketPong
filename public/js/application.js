@@ -1,6 +1,7 @@
 (function($){
 
 	var client = new Faye.Client('/faye', { timeout: 120 });
+	var $html = $("html");
 	var $body = $("body");
 
 
@@ -17,12 +18,15 @@
 
 			self.id = opts.id;
 			self.pos = opts.pos;
+			self.name = opts.name;
 			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
 
 			self.el = $("#bar"+self.pos);
 			self.$name = $("#player"+self.pos);
 
 			self.render();
+
+			if(self.name) self.setLabel(self.name);
 		},
 
 		/**
@@ -52,7 +56,7 @@
 
 			this.setLabel("YOU");
 
-			$body.mousemove(function(e) {
+			$html.mousemove(function(e) {
 				var left = e.clientX-gc.cLeft;
 				var top = e.clientY-gc.cTop;
 
@@ -92,16 +96,35 @@
 			self.setOffset();
 
 			self.players = {};
+			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
-			client.subscribe('/join', function(param) { self.playerJoined(param); });
-			setTimeout(function(){
-				$.ajax("/join?id="+self.id);
-			},100);
-
+			client.subscribe('/join', function(param) { self.userJoined(param); });
 			client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
 
+			self.showNameInput();
+
+			self.$spectators = $("#spectators");
+			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
 			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		showNameInput: function() {
+			var self = this;
+
+			var $notice = $("<div/>")
+				.addClass("notice")
+				.append("<span>Enter your name <input type=\"text\" class=\"input\"></span>")
+				.appendTo($body);
+
+			var $input = $notice.find("input").focus();
+			$input.keypress(function(e){
+				if(e.keyCode === 13) {
+					$notice.remove();
+					self.subName = $input.val();
+					$.ajax("/join?id="+self.id+"&name="+self.subName);
+				}
+			});
 		},
 
 		/**
@@ -117,35 +140,58 @@
 			this.players[info.id].movePaddle({ left: info.left, top: info.top });
 		},
 
-		playerJoined: function(obj) {
-			var self = this;
-			var players = obj.players;
-			var len = players.length, id;
+		userJoined: function(obj) {
+			var
+			self = this,
+			playersData = obj.players,
+			specsData = obj.spectators,
+			playerCount = playersData.length,
+			spectatorCount = specsData.length,
+			id, name, idArr = [];
 
-			for(var i=0; i<len; i++) {
-				id = players[i];
+
+			// Creates player controllers
+			for(var i=0; i<playerCount; i++) {
+				id = playersData[i].id;
+				name = playersData[i].name;
+
+				idArr.push(id);
+
 				// Registers a player on the board only if they haven't yet
 				if(!self.players[id]) {
-					self.players[id] = new PlayerController({id: id, pos: i+1});
+					self.players[id] = new PlayerController({id: id, pos: i+1, name: name});
 
 					// If the current paddle's ID matches the subscriber, make user a publisher
 					if(id === self.id) self.players[id].registerPublisher();
 				}
 			}
 
-			if(players.indexOf(self.id)<0) {
+			// If you're not a player or spectator(yet), show spectator message
+			if(idArr.indexOf(self.id)<0 && self.specsArr.indexOf(self.id)<0) {
 				self.showSpectatorNotice();
 			}
+
+			// Generates spectator list
+			for(i=0; i<spectatorCount; i++) {
+				id = specsData[i].id;
+				name = specsData[i].name;
+				if(self.specsArr.indexOf(id)<0) {
+					self.specsArr.push(id);
+					self.$spectators.append("<li>"+name+"</li>");
+				}
+			}
+
 		},
 
 		showSpectatorNotice: function() {
-			$("<div/>")
-				.addClass("spectator-notice")
+			var $notice = $("<div/>")
+				.addClass("notice")
 				.html("<span>Game is full, you will be a spectator</span>")
 				.appendTo($body)
-				.click(function(){
-					$(this).remove();
-				});
+				.focus()
+				.click(function(){ $(this).remove(); });
+
+			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
 		}
 	};
 	var gc = new GameController();
