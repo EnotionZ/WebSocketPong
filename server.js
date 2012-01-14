@@ -11,4 +11,5 @@ var express = require('express'),
 	app = express.createServer(),
 	gameManager = new GameManager({"app": app});
 
+app.use('/', express.static(__dirname + '/public'));
 app.listen(process.env.PORT || 8000);
