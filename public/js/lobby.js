@@ -12,6 +12,15 @@
 
 		init: function(opts) {
 			var self = this;
+			var client = self.client = new Faye.Client('/faye', { timeout: 120 });	
+			client.subscribe('/games', function(info) { self.onGameCreated(info); });
+		},
+
+		onGameCreated: function(gameMeta) {
+			$gameItem = $("<li>" + gameMeta.name + "</li>");
+			$gameItem.hide();
+			this.$gameList.prepend($gameItem);
+			$gameItem.slideDown('fast');
 		},
 
 		joinGame: function(e) {
@@ -35,6 +44,7 @@
 				this.createNewGame();
 			}
 		},
+
 		createNewGame: function() {
 			var self = this;
 			$.ajax({
@@ -46,7 +56,6 @@
 					}
 				},
 				success: function(data) {
-					self.renderGamelist(data);
 					self.$gameName.val("");
 				}
 			});
