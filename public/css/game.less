@@ -1,0 +1,93 @@
+
+#container {
+	position: absolute;
+	left: 50%; top: 50%;
+	margin: -264px 0 0 -300px;
+	background: #fff;
+	width: 600px;
+	height: 600px;
+	position: relative;
+}
+#ball {
+	position: absolute;
+	left: 300px;
+	top: 300px;
+	width: 20px;
+	height: 20px;
+	background: #fff;
+	border-radius: 10px;
+	box-shadow: inset 0 0 9px #000;
+}
+
+
+.player { position: absolute; background: #ccc; }
+.player-horizontal { width: 100%; height: 13px; text-align: center; }
+.player-vertical { height: 100%; top: 0; width: 13px; }
+#player1 { border-radius: 12px 12px 0 0; top: -13px; }
+#player2 { border-radius: 0 12px 12px 0; right: -13px; }
+#player3 { border-radius: 0 0 12px 12px; bottom: -13px; }
+#player4 { border-radius: 12px 0 0 12px; left: -13px; }
+
+.paddle {
+	position: absolute; 
+	box-shadow: inset 0 0 1px #000;
+}
+.player-horizontal .paddle { width: 100px; height: 12px; }
+.player-vertical .paddle { width: 12px; height: 100px; }
+#player1 .paddle { top: 0; left: 250px; background: red; border-radius: 12px 12px 0 0; }
+#player2 .paddle { right: 0; top: 250px; background: green; border-radius: 0 12px 12px 0; }
+#player3 .paddle { bottom: 0; left: 250px; background: blue; border-radius: 0 0 12px 12px; }
+#player4 .paddle { left: 0; top: 250px; background: yellow; border-radius: 12px 0 0 12px; }
+
+.name-label { position: relative; color: #fff; }
+.player-vertical .name-label { top: 50%; position: absolute; }
+#player1 .name-label { top: -30px; }
+#player2 .name-label { right: -75px; }
+#player3 .name-label { bottom: -30px; }
+#player4 .name-label { left: -75px; }
+
+
+.notice {
+	position: absolute;
+	left: 0; top: 0;
+	width: 100%; height: 100%;
+	line-height: 100%;
+	background: #000;
+	opacity: .8;
+	color: #fff;
+	cursor: pointer;
+}
+.notice span {
+	cursor: pointer;
+	text-align: center;
+	position: absolute; top: 50%;
+	width: 100%;
+	font: 700 30px helvetica, arial;
+}
+.notice input {
+	width: 220px;
+	font: 700 30px helvetica, arial;
+}
+
+
+
+#menu {
+	position: absolute;
+	bottom: 1px; left: 0;
+	width: 100%; height: 18px;
+}
+#menu #spectator_anchor {
+	font: normal 12px arial;
+	text-decoration: none;
+	color: turquoise;
+	
+}
+#menu #spectators {
+	position: absolute;
+	bottom: 20px;
+	background: #ddd;
+	font: 500 11px arial;
+	list-style-type: decimal;
+	list-style-position: inside;
+	padding: 6px;
+}

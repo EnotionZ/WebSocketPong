@@ -332,7 +332,7 @@
 			this.$gameList.append("<li>" + gameInfo.name + "</li>");
 		}
 	});
-	var lobby = new Lobby("body");
+	var lobby = new Lobby("#lobby");
 	lobby.refreshGameList();
 
 })(jQuery);

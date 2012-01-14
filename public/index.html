@@ -6,14 +6,19 @@
 	</head>
 	<body>
 
-		<div id="games_menu">
-			<ul id="game_list"> </ul>
+		<div id="lobby">
+			<div id="games_menu">
+				<h3>Game List</h3>
+				<ul id="game_list"> </ul>
+			</div>
+
+			<div id="new_game-container">
+				<h3>Create a new game</h3>
+				<input type="text" id="game_name" />
+				<input type="submit" id="new_game" value="Create" />
+			</div>
 		</div>
 
-		<div id="new_game-container">
-			<input type="text" id="game_name" />
-			<input type="submit" id="new_game" value="Create" />
-		</div>
 		
 		<!--
 		<div id="menu">
@@ -26,6 +31,7 @@
 			<div id="ball"></div>
 		</div>
 		-->
+
 		<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script type="text/javascript" src="/js/spine.js"></script>
 		<script type="text/javascript" src="/faye.js"></script>
