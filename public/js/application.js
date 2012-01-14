@@ -278,10 +278,34 @@
 	};
 	//var gc = new GameController();
 
-	var Lobby = function(opts) { this.init(opts); };
-	Lobby.prototype = {
+	var Lobby = Spine.Controller.sub({
+		//events: {"click #new_game": "newGame"},
+		//events: {"newGame": "click #new_game"},
+
 		init: function(opts) {
+			var self = this;
 			this.$gameList = $("ul#game_list");
+
+			this.$newGame = $("#new_game");
+			this.$gameName = $("#game_name");
+
+			console.log(this.$newGame);
+			this.$newGame.click(function() {
+				self.newGame();
+			});
+		},
+
+		newGame: function() {
+			var self = this;
+			$.ajax({
+				type: "POST",
+				url: "/games/",
+				data: {
+					game: {
+						name: self.$gameName.val()
+					}
+				}
+			});
 		},
 
 		refreshGameList: function() {
@@ -291,7 +315,8 @@
 				"success": function(data) {
 					$.each(data, function(i, o) {
 						self.addGame(o);
-					})
+					});
+					console.log(data);
 				}
 			});
 		},
@@ -303,8 +328,8 @@
 		addGame: function(gameInfo) {
 			this.$gameList.append("<li>" + gameInfo.name + "</li>");
 		}
-	};
-	var lobby = new Lobby();
+	});
+	var lobby = new Lobby("body");
 	lobby.refreshGameList();
 
 })(jQuery);
