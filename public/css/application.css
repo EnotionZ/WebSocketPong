@@ -108,3 +108,16 @@ body {
 	list-style-position: inside;
 	padding: 6px;
 }
+
+.powerup {
+	position: absolute;
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	background: purple;
+}
+.powerup.green {
+	background: green;
+}
+.powerup.red {
+	background: red;

@@ -103,7 +103,11 @@
 		}
 	};
 
-
+	var PowerUpController = function(){};
+	PowerUpController.prototype = {
+		init: function(){
+		}
+	}
 
 
 	/**
@@ -129,12 +133,29 @@
 			client.subscribe('/join', function(info) { self.userJoined(info); });
 			client.subscribe('/ball', function(info) { self.updateBall(info); });
 			client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
+			client.subscribe('/gumdrop', function(info) { self.createGumDrop(info); });
 
 			self.showNameInput();
 
 			self.$spectators = $("#spectators");
 			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
 			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		createGumDrop: function(data) {
+			var self = this;
+
+			self.data = data;
+
+			$powerUp = $('<div class="powerup"></div>');
+
+			$powerUp.css({'width':self.data.size, 'height':self.data.size});
+			$powerUp.css({left: self.data.x, top: self.data.y });
+			
+			$('#container').append($powerUp);
+		},
+
+		updateGumDrop: function() {
 		},
 
 		updateBall: function(info) {
