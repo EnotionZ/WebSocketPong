@@ -289,7 +289,6 @@
 			this.$newGame = $("#new_game");
 			this.$gameName = $("#game_name");
 
-			console.log(this.$newGame);
 			this.$newGame.click(function() {
 				self.newGame();
 			});
@@ -304,19 +303,23 @@
 					game: {
 						name: self.$gameName.val()
 					}
+				},
+				success: function() {
+					self.refreshGameList();
 				}
 			});
 		},
 
 		refreshGameList: function() {
 			var self = this;
+
+			self.clearGameList();
 			$.ajax({
 				"url": '/games/',
 				"success": function(data) {
 					$.each(data, function(i, o) {
 						self.addGame(o);
 					});
-					console.log(data);
 				}
 			});
 		},
