@@ -47,6 +47,7 @@
 				},
 				success: function(data) {
 					self.renderGamelist(data);
+					self.$gameName.val("");
 				}
 			});
 		},
