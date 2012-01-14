@@ -114,27 +114,27 @@
 		init: function(opts) {
 			var self = this;
 
-			self.boardWidth = 600;
-			self.ballSize = 20;
-			self.$board = $("#container");
-			self.$ball = $("#ball");
-			self.setOffset();
-			self.ballData = {};
+			//self.boardWidth = 600;
+			//self.ballSize = 20;
+			//self.$board = $("#container");
+			//self.$ball = $("#ball");
+			//self.setOffset();
+			//self.ballData = {};
 
-			self.players = {};
-			self.playersArr = [];
-			self.specsArr = [];
-			self.id = "p"+parseInt(Math.random()*999999,10);
+			//self.players = {};
+			//self.playersArr = [];
+			//self.specsArr = [];
+			//self.id = "p"+parseInt(Math.random()*999999,10);
 
-			client.subscribe('/join', function(info) { self.userJoined(info); });
-			client.subscribe('/ball', function(info) { self.updateBall(info); });
-			client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
+			//client.subscribe('/join', function(info) { self.userJoined(info); });
+			//client.subscribe('/ball', function(info) { self.updateBall(info); });
+			//client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
 
-			self.showNameInput();
+			//self.showNameInput();
 
-			self.$spectators = $("#spectators");
-			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
-			$(window).resize(function(){ self.setOffset(); });
+			//self.$spectators = $("#spectators");
+			//$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
+			//$(window).resize(function(){ self.setOffset(); });
 		},
 
 		updateBall: function(info) {
@@ -276,7 +276,28 @@
 			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
 		}
 	};
-	var gc = new GameController();
+	//var gc = new GameController();
 
+	var Lobby = function(opts) { this.init(opts); };
+	Lobby.prototype = {
+		init: function(opts) {
+			this.$gameList = $("ul#game_list");
+		},
+
+		refreshGameList: function() {
+			this.clearGameList();
+			this.addGame({name: "Fake Game"});
+		},
+
+		clearGameList: function() {
+			this.$gameList.empty();
+		},
+
+		addGame: function(gameInfo) {
+			this.$gameList.append("<li>" + gameInfo.name + "</li>");
+		}
+	};
+	var lobby = new Lobby();
+	lobby.refreshGameList();
 
 })(jQuery);
