@@ -285,8 +285,15 @@
 		},
 
 		refreshGameList: function() {
-			this.clearGameList();
-			this.addGame({name: "Fake Game"});
+			var self = this;
+			$.ajax({
+				"url": '/games/',
+				"success": function(data) {
+					$.each(data, function(i, o) {
+						self.addGame(o);
+					})
+				}
+			});
 		},
 
 		clearGameList: function() {
