@@ -1,18 +1,41 @@
 (function($){
 	var Lobby = Spine.Controller.sub({
+		elements: {
+			"#game_list": "$gameList",
+			"#game_name": "$gameName"
+		},
+		events: {
+			"click #new_game": "createNewGame",
+			"keypress #game_name": "gameInputKeypress",
+			"click #game_list li": "joinGame"
+		},
+
 		init: function(opts) {
 			var self = this;
-			this.$gameList = $("ul#game_list");
+		},
 
-			this.$newGame = $("#new_game");
-			this.$gameName = $("#game_name");
-
-			this.$newGame.click(function() {
-				self.newGame();
+		joinGame: function(e) {
+			var $t = $(e.target);
+			$.ajax({
+				type: "POST",
+				url: "/join/",
+				data: {
+					game: {
+						name: $t.html()
+					}
+				},
+				success: function(data) {
+					console.log("Joined Game", data.name);
+				}
 			});
 		},
 
-		newGame: function() {
+		gameInputKeypress: function(e) {
+			if(e.keyCode === 13) {
+				this.createNewGame();
+			}
+		},
+		createNewGame: function() {
 			var self = this;
 			$.ajax({
 				type: "POST",
@@ -22,22 +45,27 @@
 						name: self.$gameName.val()
 					}
 				},
-				success: function() {
-					self.refreshGameList();
+				success: function(data) {
+					self.renderGamelist(data);
 				}
+			});
+		},
+
+		renderGamelist: function(data) {
+			var self = this;
+			self.clearGameList();
+			$.each(data, function(i, o) {
+				self.addGame(o);
 			});
 		},
 
 		refreshGameList: function() {
 			var self = this;
 
-			self.clearGameList();
 			$.ajax({
 				"url": '/games/',
 				"success": function(data) {
-					$.each(data, function(i, o) {
-						self.addGame(o);
-					});
+					self.renderGamelist(data);
 				}
 			});
 		},
@@ -50,6 +78,6 @@
 			this.$gameList.append("<li>" + gameInfo.name + "</li>");
 		}
 	});
-	var lobby = new Lobby("#lobby");
+	var lobby = new Lobby({el: "#lobby"});
 	lobby.refreshGameList();
 })(jQuery);
