@@ -1,6 +1,5 @@
-(function($){
+require(["js/faye_client", "js/spine"], function(client){
 
-	var client = new Faye.Client('/faye', { timeout: 120 });
 	var $html = $("html");
 	var $body = $("body");
 
@@ -279,4 +278,4 @@
 	//var gc = new GameController();
 
 
-})(jQuery);
+});

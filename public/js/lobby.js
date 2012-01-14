@@ -1,4 +1,4 @@
-(function($){
+require(["js/faye_client", "js/spine"], function(client){
 	var Lobby = Spine.Controller.sub({
 		elements: {
 			"#game_list": "$gameList",
@@ -12,7 +12,6 @@
 
 		init: function(opts) {
 			var self = this;
-			var client = self.client = new Faye.Client('/faye', { timeout: 120 });	
 			client.subscribe('/games', function(info) { self.onGameCreated(info); });
 		},
 
@@ -90,4 +89,4 @@
 	});
 	var lobby = new Lobby({el: "#lobby"});
 	lobby.refreshGameList();
-})(jQuery);
+});
