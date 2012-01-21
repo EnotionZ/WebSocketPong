@@ -16,7 +16,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 
 		onGameCreated: function(gameMeta) {
-			$gameItem = $("<li>" + gameMeta.name + "</li>");
+			$gameItem = $("<li><a href='/games/" + gameMeta.id + "'>" + gameMeta.name + "</a></li>");
 			$gameItem.hide();
 			this.$gameList.prepend($gameItem);
 			$gameItem.slideDown('fast');
