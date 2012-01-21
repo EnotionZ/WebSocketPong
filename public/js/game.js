@@ -1,3 +1,6 @@
+require.config({
+	baseUrl: "/"
+});
 require(["js/faye_client", "js/spine"], function(client){
 
 	var $html = $("html");
@@ -81,7 +84,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				var top = e.clientY-gc.cTop;
 				var info = {pos: pos, id: id, left: left, top: top};
 
-				client.publish('/coord', info);
+				client.publish('/games/' + GAME_ID + '/coord', info);
 			});
 		},
 		
@@ -113,27 +116,27 @@ require(["js/faye_client", "js/spine"], function(client){
 		init: function(opts) {
 			var self = this;
 
-			//self.boardWidth = 600;
-			//self.ballSize = 20;
-			//self.$board = $("#container");
-			//self.$ball = $("#ball");
-			//self.setOffset();
-			//self.ballData = {};
+			self.boardWidth = 600;
+			self.ballSize = 20;
+			self.$board = $("#container");
+			self.$ball = $("#ball");
+			self.setOffset();
+			self.ballData = {};
 
-			//self.players = {};
-			//self.playersArr = [];
-			//self.specsArr = [];
-			//self.id = "p"+parseInt(Math.random()*999999,10);
+			self.players = {};
+			self.playersArr = [];
+			self.specsArr = [];
+			self.id = "p"+parseInt(Math.random()*999999,10);
 
-			//client.subscribe('/join', function(info) { self.userJoined(info); });
-			//client.subscribe('/ball', function(info) { self.updateBall(info); });
-			//client.subscribe('/coord', function(info) { self.subscribedMovement(info); });
+			client.subscribe('/games/' + GAME_ID + '/join', function(info) { self.userJoined(info); });
+			client.subscribe('/games/' + GAME_ID + '/ball', function(info) { self.updateBall(info); });
+			client.subscribe('/games/' + GAME_ID + '/coord', function(info) { self.subscribedMovement(info); });
 
-			//self.showNameInput();
+			self.showNameInput();
 
-			//self.$spectators = $("#spectators");
-			//$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
-			//$(window).resize(function(){ self.setOffset(); });
+			self.$spectators = $("#spectators");
+			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
+			$(window).resize(function(){ self.setOffset(); });
 		},
 
 		updateBall: function(info) {
@@ -202,7 +205,12 @@ require(["js/faye_client", "js/spine"], function(client){
 				if(e.keyCode === 13) {
 					$notice.remove();
 					self.subName = $input.val();
-					$.ajax("/join?id="+self.id+"&name="+self.subName);
+					var joinEvent = {
+						id: self.id,
+						name: self.subName
+					}
+					//client.publish('/games/' + GAME_ID + '/join', joinEvent);
+					$.post("/games/" + GAME_ID + "/players/", joinEvent);
 				}
 			});
 		},
@@ -275,7 +283,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
 		}
 	};
-	//var gc = new GameController();
+	var gc = new GameController();
 
 
 });

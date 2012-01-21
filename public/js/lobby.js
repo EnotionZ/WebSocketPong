@@ -16,10 +16,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 
 		onGameCreated: function(gameMeta) {
-			$gameItem = $("<li><a href='/games/" + gameMeta.id + "'>" + gameMeta.name + "</a></li>");
-			$gameItem.hide();
-			this.$gameList.prepend($gameItem);
-			$gameItem.slideDown('fast');
+			this.addGame(gameMeta);
 		},
 
 		joinGame: function(e) {
@@ -83,8 +80,12 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.$gameList.empty();
 		},
 
-		addGame: function(gameInfo) {
-			this.$gameList.append("<li>" + gameInfo.name + "</li>");
+		addGame: function(gameMeta) {
+			$gameItem = $("<li><a href='/games/" + gameMeta.id + "'>" + gameMeta.name + "</a></li>");
+			$gameItem.hide();
+			this.$gameList.prepend($gameItem);
+			$gameItem.slideDown('fast');
+			//this.$gameList.append("<li>" + gameInfo.name + "</li>");
 		}
 	});
 	var lobby = new Lobby({el: "#lobby"});

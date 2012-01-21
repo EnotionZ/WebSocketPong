@@ -1,0 +1,16 @@
+!!! 5
+html
+	head
+		link(rel="stylesheet", href="/css/application.css")
+		link(rel="stylesheet", href="http://twitter.github.com/bootstrap/1.4.0/bootstrap.min.css")
+		script
+			GAME_ID = #{gameMeta.id};
+	body
+		#menu
+			a#spectator_anchor Spectators
+			ul#spectators
+		#container
+			#ball
+		script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js")
+		script(src="/js/require.js")
+		script(src="/js/game.js") 

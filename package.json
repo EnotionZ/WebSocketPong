@@ -4,6 +4,7 @@
 	"dependencies": {
 		"node-static": "0.5.9",
 		"faye": "0.7.1",
-		"express": "2.5.6"
+		"express": "2.5.6",
+		"jade": "0.20.0"
 	}
 }
