@@ -12,11 +12,12 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		init: function(opts) {
 			var self = this;
-			client.subscribe('/games', function(info) { self.onGameCreated(info); });
+			client.subscribe('/games', function(info) { self.onGameUpdate(info); });
 		},
 
-		onGameCreated: function(gameMeta) {
-			this.addGame(gameMeta);
+		onGameUpdate: function(gameMeta) {
+			if(gameMeta === "refresh") this.refreshGameList();
+			else this.addGame(gameMeta);
 		},
 
 		joinGame: function(e) {
