@@ -167,43 +167,42 @@ body {
   position: absolute;
   background: #ccc;
 }
-.player-horizontal {
+.player .paddle {
+  position: absolute;
+  box-shadow: inset 0 0 1px #000;
+}
+.player .middle {
+  position: relative;
+}
+.player .middle > span {
+  margin: 0 2px;
+}
+.player.player-horizontal {
   width: 100%;
   height: 13px;
   text-align: center;
 }
-.player-vertical {
+.player.player-horizontal .paddle {
+  width: 100px;
+  height: 12px;
+}
+.player.player-vertical {
   height: 100%;
   top: 0;
   width: 13px;
 }
+.player.player-vertical .paddle {
+  width: 12px;
+  height: 100px;
+}
+.player.player-vertical .middle {
+  top: 50%;
+  position: absolute;
+  margin-top: -1em;
+}
 #player1 {
   border-radius: 12px 12px 0 0;
   top: -13px;
-}
-#player2 {
-  border-radius: 0 12px 12px 0;
-  right: -13px;
-}
-#player3 {
-  border-radius: 0 0 12px 12px;
-  bottom: -13px;
-}
-#player4 {
-  border-radius: 12px 0 0 12px;
-  left: -13px;
-}
-.paddle {
-  position: absolute;
-  box-shadow: inset 0 0 1px #000;
-}
-.player-horizontal .paddle {
-  width: 100px;
-  height: 12px;
-}
-.player-vertical .paddle {
-  width: 12px;
-  height: 100px;
 }
 #player1 .paddle {
   top: 0;
@@ -211,11 +210,25 @@ body {
   background: red;
   border-radius: 12px 12px 0 0;
 }
+#player1 .middle {
+  top: -30px;
+}
+#player2 {
+  border-radius: 0 12px 12px 0;
+  right: -13px;
+}
 #player2 .paddle {
   right: 0;
   top: 250px;
   background: green;
   border-radius: 0 12px 12px 0;
+}
+#player2 .middle {
+  right: -100px;
+}
+#player3 {
+  border-radius: 0 0 12px 12px;
+  bottom: -13px;
 }
 #player3 .paddle {
   bottom: 0;
@@ -223,31 +236,21 @@ body {
   background: blue;
   border-radius: 0 0 12px 12px;
 }
+#player3 .middle {
+  bottom: -30px;
+}
+#player4 {
+  border-radius: 12px 0 0 12px;
+  left: -13px;
+}
 #player4 .paddle {
   left: 0;
   top: 250px;
   background: yellow;
   border-radius: 12px 0 0 12px;
 }
-.name-label {
-  position: relative;
-  color: #fff;
-}
-.player-vertical .name-label {
-  top: 50%;
-  position: absolute;
-}
-#player1 .name-label {
-  top: -30px;
-}
-#player2 .name-label {
-  right: -75px;
-}
-#player3 .name-label {
-  bottom: -30px;
-}
-#player4 .name-label {
-  left: -75px;
+#player4 .middle {
+  left: -100px;
 }
 .notice {
   position: absolute;
@@ -269,21 +272,12 @@ body {
   width: 100%;
   font: 700 30px helvetica, arial;
 }
-.notice input {
-  width: 220px;
-  font: 700 30px helvetica, arial;
-}
 #menu {
   position: absolute;
-  bottom: 1px;
+  bottom: 10px;
   left: 0;
   width: 100%;
   height: 18px;
-}
-#menu #spectator_anchor {
-  font: normal 12px arial;
-  text-decoration: none;
-  color: turquoise;
 }
 #menu #spectators {
   position: absolute;

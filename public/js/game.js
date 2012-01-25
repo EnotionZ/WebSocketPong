@@ -26,22 +26,37 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.coord = {left: 250, top: 250};
 			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
 
+			self.score = 0;
+			self.lives = 3;
+
 			self.render();
 
 			if(self.name) self.setLabel(self.name);
 		},
 
-		blinkPaddle: function() {
+		hitPaddle: function() {
 			var self = this;
 			self.$paddle.css("background-color","#000");
 			setTimeout(function() { self.$paddle.css("background-color", self.color); }, 100);
+			
+			console.log("Hit: " + self.name);
+			self.score += 10;
+			self.updateScore();
 		},
 
-		blinkWall: function() {
+		hitWall: function() {
 			var self = this;
 			self.el.css("background-color","#000");
 			setTimeout(function() { self.el.css("background-color", self.wallColor); }, 100);
+			
+			console.log("Miss: " + self.name);
+			self.lives -= 1;
+			self.updateLives();
+			if(self.lives <= 0){
+				gc.showLoss(self.name);
+			}
 		},
+
 
 		/**
 		 * Processing a subscribed mouse event triggered by one of the players
@@ -89,15 +104,25 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 		
 		setLabel: function(str) { this.$name.html(str); },
+		updateLives: function(str) { this.$lives.html(this.lives); },
+		updateScore: function(str) { this.$score.html(this.score); },
 
 		render: function() {
+			var $middle = $("<div/>").addClass("middle");
+
 			this.$paddle = $("<div/>").addClass("paddle");
-			this.$name = $("<span/>").addClass("name-label");
+			this.$name = $("<span/>").addClass("name-label label default");
+			this.$lives = $("<span/>").addClass("lives label important");
+			this.$score = $("<span/>").addClass("score label success");
 			this.setLabel("Player: "+this.pos);
+			this.updateLives();
+			this.updateScore();
+
+			$middle.append(this.$name, this.$lives, this.$score);
 
 			this.el = $("<div/>")
 			.appendTo(gc.$board)
-			.append(this.$paddle, this.$name)
+			.append(this.$paddle, $middle)
 			.addClass("player player-" + this.orientation)
 			.attr("id", "player"+this.pos);
 
@@ -122,6 +147,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.$ball = $("#ball");
 			self.setOffset();
 			self.ballData = {};
+
+			self.paused = false;
 
 			self.players = {};
 			self.playersArr = [];
@@ -149,27 +176,28 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		moveBall: function() {
 			var self = this;
-			var bd = self.ballData;
+			if(!self.paused){
+				var bd = self.ballData;
 
-			bd.x = bd.x+bd.incX;
-			bd.y = bd.y+bd.incY;
+				bd.x = bd.x+bd.incX;
+				bd.y = bd.y+bd.incY;
 
-			if(bd.x < 0) {
-				bd.incX = Math.abs(bd.incX);
-				self.checkContact(self.getPlayer(3), bd.y);
-			} else if(bd.x > self.boardWidth-self.ballSize) {
-				bd.incX = -Math.abs(bd.incX);
-				self.checkContact(self.getPlayer(1), bd.y);
+				if(bd.x < 0) {
+					bd.incX = Math.abs(bd.incX);
+					self.checkContact(self.getPlayer(3), bd.y);
+				} else if(bd.x > self.boardWidth-self.ballSize) {
+					bd.incX = -Math.abs(bd.incX);
+					self.checkContact(self.getPlayer(1), bd.y);
+				}
+				if(bd.y < 0) {
+					bd.incY = Math.abs(bd.incY);
+					self.checkContact(self.getPlayer(0), bd.x);
+				} if(bd.y > self.boardWidth-self.ballSize) {
+					bd.incY = -Math.abs(bd.incY);
+					self.checkContact(self.getPlayer(2), bd.x);
+				}
+				self.$ball.css({left: bd.x, top: bd.y});
 			}
-
-			if(bd.y < 0) {
-				bd.incY = Math.abs(bd.incY);
-				self.checkContact(self.getPlayer(0), bd.x);
-			} if(bd.y > self.boardWidth-self.ballSize) {
-				bd.incY = -Math.abs(bd.incY);
-				self.checkContact(self.getPlayer(2), bd.x);
-			}
-			self.$ball.css({left: bd.x, top: bd.y});
 		},
 
 		checkContact: function(player, ballPos) {
@@ -181,9 +209,9 @@ require(["js/faye_client", "js/spine"], function(client){
 			}
 
 			if(this._checkContact(player, paddlePos, ballPos)) {
-				player.blinkPaddle();
+				player.hitPaddle();
 			} else {
-				player.blinkWall();
+				player.hitWall();
 			}
 		},
 		_checkContact: function(player, paddlePos, ballPos) {
@@ -197,7 +225,7 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			var $notice = $("<div/>")
 				.addClass("notice")
-				.append("<span>Enter your name <input type=\"text\" class=\"input\"></span>")
+				.append("<span><h3>Enter your name</h3> <input type=\"text\" class=\"x-large span4\"></span>")
 				.appendTo($body);
 
 			var $input = $notice.find("input").focus();
@@ -281,6 +309,16 @@ require(["js/faye_client", "js/spine"], function(client){
 				.click(function(){ $(this).remove(); });
 
 			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
+		},
+
+		showLoss: function(loser) {
+			
+			this.paused = true;
+			var $msg = $("<div/>")
+				.appendTo(gc.$board).
+				addClass("notice")
+				.text(loser + "died! Will restart in 15 seconds!");
+			setTimeout(function() { $msg.hide(); this.paused = false; }, 15000);
 		}
 	};
 	var gc = new GameController();
