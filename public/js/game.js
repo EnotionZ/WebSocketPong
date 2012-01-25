@@ -246,7 +246,8 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			// If you're not a player or spectator(yet), show spectator message
 			if(idArr.indexOf(self.id)<0 && self.specsArr.indexOf(self.id)<0) {
-				self.showSpectatorNotice();
+				if(obj.gameEnded) self.showLoss(self.players[obj.loser.id]);
+				else self.showSpectatorNotice();
 			}
 
 			// Generates spectator list
