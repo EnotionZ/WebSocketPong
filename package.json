@@ -1,5 +1,5 @@
 {
-	"name": "websocket-pong",
+	"name": "node-pong",
 	"version": "0.0.1",
 	"dependencies": {
 		"node-static": "0.5.9",
