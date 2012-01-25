@@ -1,6 +1,7 @@
-
 install node 0.4.x
 
 npm install
 gem install foreman
 foreman start
+
+changes in master are occasionally deployed to http://dominick.no.de
