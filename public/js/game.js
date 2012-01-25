@@ -23,38 +23,31 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.id = opts.id;
 			self.pos = opts.pos;
 			self.name = opts.name;
-			self.coord = {left: 250, top: 250};
+			self.coord = {left: 300, top: 300};
 			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
-
-			self.score = 0;
-			self.lives = 3;
 
 			self.render();
 
 			if(self.name) self.setLabel(self.name);
 		},
 
-		hitPaddle: function() {
+		hitPaddle: function(lives, score) {
 			var self = this;
 			self.$paddle.css("background-color","#000");
 			setTimeout(function() { self.$paddle.css("background-color", self.color); }, 100);
 			
 			console.log("Hit: " + self.name);
-			self.score += 10;
-			self.updateScore();
+			self.updateScore(score);
 		},
 
-		hitWall: function() {
+		hitWall: function(lives, score) {
 			var self = this;
 			self.el.css("background-color","#000");
 			setTimeout(function() { self.el.css("background-color", self.wallColor); }, 100);
 			
 			console.log("Miss: " + self.name);
-			self.lives -= 1;
-			self.updateLives();
-			if(self.lives <= 0){
-				gc.showLoss(self.name);
-			}
+			self.updateLives(lives);
+			if(lives <= 0) gc.showLoss(self);
 		},
 
 
@@ -63,7 +56,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		 */
 		movePaddle: function(info) {
 			var self = this, position;
-			var maxPos = gc.boardWidth-self.paddleSize;
+			var maxPos = gc.boardWidth-self.paddleSize/2;
 
 			var coord = self.coord;
 			self.coord.left = info.left;
@@ -71,17 +64,21 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
-				if(position < 0) position = 0;
-				else if(position > maxPos) position = maxPos;
+				position = self.fixPosition(position, maxPos);
 				self.$paddle.css("left", position);
 				coord.left = position;
 			} else {
 				position = info.top - self.paddleSize/2;
-				if(position < 0) position = 0;
-				else if(position > maxPos) position = maxPos;
+				position = self.fixPosition(position, maxPos);
 				self.$paddle.css("top", position);
 				coord.top = position;
 			}
+		},
+
+		fixPosition: function(val, max) {
+			if(val < 0) val = 0;
+			else if(val > max) val = max;
+			return val;
 		},
 
 		/**
@@ -91,21 +88,23 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 			var pos = this.pos-1;
 			var id = this.id;
+			var maxPos = gc.boardWidth-self.paddleSize/2;
+			var info = {pos: pos, id: id, left: 300, top: 300};
 
 			this.setLabel("YOU");
 
+			client.publish('/games/' + GAME_ID + '/coord', info);
 			$html.mousemove(function(e) {
-				var left = e.clientX-gc.cLeft;
-				var top = e.clientY-gc.cTop;
-				var info = {pos: pos, id: id, left: left, top: top};
+				info.left = self.fixPosition(e.clientX-gc.cLeft, maxPos);
+				info.top = self.fixPosition(e.clientY-gc.cTop, maxPos);
 
 				client.publish('/games/' + GAME_ID + '/coord', info);
 			});
 		},
 		
 		setLabel: function(str) { this.$name.html(str); },
-		updateLives: function(str) { this.$lives.html(this.lives); },
-		updateScore: function(str) { this.$score.html(this.score); },
+		updateLives: function(val) { this.$lives.html(val); },
+		updateScore: function(val) { this.$score.html(val); },
 
 		render: function() {
 			var $middle = $("<div/>").addClass("middle");
@@ -115,8 +114,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.$lives = $("<span/>").addClass("lives label important");
 			this.$score = $("<span/>").addClass("score label success");
 			this.setLabel("Player: "+this.pos);
-			this.updateLives();
-			this.updateScore();
+			this.updateLives(0);
+			this.updateScore(0);
 
 			$middle.append(this.$name, this.$lives, this.$score);
 
@@ -140,6 +139,7 @@ require(["js/faye_client", "js/spine"], function(client){
 	GameController.prototype = {
 		init: function(opts) {
 			var self = this;
+			var path = '/games/'+GAME_ID;
 
 			self.boardWidth = 600;
 			self.ballSize = 20;
@@ -148,16 +148,16 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.setOffset();
 			self.ballData = {};
 
-			self.paused = false;
-
 			self.players = {};
 			self.playersArr = [];
 			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
-			client.subscribe('/games/' + GAME_ID + '/join', function(info) { self.userJoined(info); });
-			client.subscribe('/games/' + GAME_ID + '/ball', function(info) { self.updateBall(info); });
-			client.subscribe('/games/' + GAME_ID + '/coord', function(info) { self.subscribedMovement(info); });
+			client.subscribe(path + '/join', function(info) { self.userJoined(info); });
+			client.subscribe(path + '/ball', function(info) { self.updateBall(info); });
+			client.subscribe(path + '/coord', function(info) { self.subscribedMovement(info); });
+
+			client.subscribe(path + '/contact', function(info) { self.checkContact(info.player, info.hit); });
 
 			self.showNameInput();
 
@@ -170,52 +170,13 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 
 			self.ballData = info;
-			clearTimeout(self.ballmoveTimer);
-			self.ballmoveTimer = setInterval(function(){ self.moveBall(); }, 20);
+			self.$ball.css({left: info.x, top: info.y});
 		},
 
-		moveBall: function() {
-			var self = this;
-			if(!self.paused){
-				var bd = self.ballData;
 
-				bd.x = bd.x+bd.incX;
-				bd.y = bd.y+bd.incY;
-
-				if(bd.x < 0) {
-					bd.incX = Math.abs(bd.incX);
-					self.checkContact(self.getPlayer(3), bd.y);
-				} else if(bd.x > self.boardWidth-self.ballSize) {
-					bd.incX = -Math.abs(bd.incX);
-					self.checkContact(self.getPlayer(1), bd.y);
-				}
-				if(bd.y < 0) {
-					bd.incY = Math.abs(bd.incY);
-					self.checkContact(self.getPlayer(0), bd.x);
-				} if(bd.y > self.boardWidth-self.ballSize) {
-					bd.incY = -Math.abs(bd.incY);
-					self.checkContact(self.getPlayer(2), bd.x);
-				}
-				self.$ball.css({left: bd.x, top: bd.y});
-			}
-		},
-
-		checkContact: function(player, ballPos) {
-			var paddlePos;
-			if(player.pos === 1 || player.pos === 3) {
-				paddlePos = player.coord.left;
-			} else {
-				paddlePos = player.coord.top;
-			}
-
-			if(this._checkContact(player, paddlePos, ballPos)) {
-				player.hitPaddle();
-			} else {
-				player.hitWall();
-			}
-		},
-		_checkContact: function(player, paddlePos, ballPos) {
-			return ballPos > paddlePos && ballPos+this.ballSize < paddlePos + player.paddleSize;
+		checkContact: function(player, hit) {
+			var _player = this.players[player.id];
+			_player[hit ? "hitPaddle" : "hitWall"](player.lives, player.score);
 		},
 
 		getPlayer: function(pos) { return this.players[this.playersArr[pos]]; },
@@ -312,13 +273,10 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 
 		showLoss: function(loser) {
-			
-			this.paused = true;
 			var $msg = $("<div/>")
-				.appendTo(gc.$board).
-				addClass("notice")
-				.text(loser + "died! Will restart in 15 seconds!");
-			setTimeout(function() { $msg.hide(); this.paused = false; }, 15000);
+				.appendTo($body)
+				.addClass("notice")
+				.html("<span>"+loser.name + " died! Game Over!!</span>");
 		}
 	};
 	var gc = new GameController();
