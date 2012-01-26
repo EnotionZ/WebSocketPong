@@ -60,7 +60,7 @@ require(["js/faye_client", "js/spine"], function(client){
 						pwidth = plr.paddleHeight;
 						ptop+=PADDLEHEIGHT;
 					}
-					p.fill(plr.color);
+					p.fill(plr.displayColor);
 					p.rect(pleft, ptop, pwidth, pheight);
 				}
 			}
@@ -99,6 +99,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				case 3: self.color = 0xff0000ff; break;
 				case 4: self.color = 0xfffff000; break;
 			}
+			self.displayColor = self.color;
 
 			self.render();
 
@@ -108,6 +109,9 @@ require(["js/faye_client", "js/spine"], function(client){
 		hitPaddle: function(lives, score) {
 			var self = this;
 			
+			self.displayColor = 0xff666666;
+			setTimeout(function(){ self.displayColor = self.color; }, 200);
+
 			console.log("Hit: " + self.name);
 			self.updateScore(score);
 		},
