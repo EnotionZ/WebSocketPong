@@ -1,6 +1,4 @@
-require.config({
-	baseUrl: "/"
-});
+require.config({ baseUrl: "/" });
 require(["js/faye_client", "js/spine"], function(client){
 
 	var $html = $("html");

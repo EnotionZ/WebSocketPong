@@ -15,8 +15,29 @@
 
 			<div id="new_game-container">
 				<h3>Create a new game</h3>
-				<input type="text" id="game_name" class="x-large span3" />
-				<input type="submit" id="new_game" class="btn primary" value="Create" />
+				<form action="/games/">
+					<ul class="unstyled">
+						<li class="clearfix">
+							<label for="game_name">Name</label>
+							<div class="input">
+								<input type="text" name="game_name" id="game_name" class="x-large span3" />
+							</div>
+						<li class="clearfix">
+							<label for="num_players">Players</label>
+							<div class="input">
+								<select name="num_players" id="num_players" class="small">
+									<option>1</option>
+									<option>2</option>
+									<option>4</option>
+								</select>
+							</div>
+						</li>
+						<li class="actions clearfix">
+							<input type="submit" id="new_game" class="btn primary" value="Create" />
+						</li>
+					</ul>
+				</form>
+
 			</div>
 		</div>
 

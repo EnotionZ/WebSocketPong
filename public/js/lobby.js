@@ -2,7 +2,8 @@ require(["js/faye_client", "js/spine"], function(client){
 	var Lobby = Spine.Controller.sub({
 		elements: {
 			"#game_list": "$gameList",
-			"#game_name": "$gameName"
+			"#game_name": "$gameName",
+			"#num_players": "$players"
 		},
 		events: {
 			"click #new_game": "createNewGame",
@@ -39,6 +40,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		gameInputKeypress: function(e) {
 			if(e.keyCode === 13) {
 				this.createNewGame();
+				return false;
 			}
 		},
 
@@ -49,13 +51,15 @@ require(["js/faye_client", "js/spine"], function(client){
 				url: "/games/",
 				data: {
 					game: {
-						name: self.$gameName.val()
+						name: self.$gameName.val(),
+						players: parseInt(self.$players.val(),10)
 					}
 				},
 				success: function(data) {
 					self.$gameName.val("");
 				}
 			});
+			return false;
 		},
 
 		renderGamelist: function(data) {
