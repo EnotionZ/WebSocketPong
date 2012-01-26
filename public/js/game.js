@@ -144,14 +144,23 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.boardWidth = 600;
 			self.ballSize = 20;
 			self.$board = $("#container");
-			self.$ball = $("#ball");
 			self.setOffset();
-			self.ballData = {};
+
+			self.ballData = [];
+			self.bdcount = 60;
 
 			self.players = {};
 			self.playersArr = [];
 			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
+
+
+			// processing js for ball
+			setTimeout(function(){
+				self.cvsBall = document.getElementById("cvs_ball");
+				self.pcsBall = new Processing(self.cvsBall, self.sketchBall);
+			}, 100);
+
 
 			client.subscribe(path + '/join', function(info) { self.userJoined(info); });
 			client.subscribe(path + '/ball', function(info) { self.updateBall(info); });
@@ -166,11 +175,33 @@ require(["js/faye_client", "js/spine"], function(client){
 			$(window).resize(function(){ self.setOffset(); });
 		},
 
+		sketchBall: function(p) {
+			p.setup = function() {
+				p.size(600,600);
+				p.frameRate(60);
+				p.smooth();
+				p.noStroke();
+				p.fill(150, 153);
+			};
+			p.draw = function() {
+				var bd = gc.ballData, curr, count = gc.bdcount;
+
+				p.background(0,0);
+				for(var i=0; i<count; i++) {
+					curr = bd[i];
+					if(typeof curr === "object") {
+						p.ellipse(curr.x+10, curr.y+10, i/3, i/3);
+					}
+				}
+			};
+		},
+
 		updateBall: function(info) {
 			var self = this;
+			var num = self.bdcount;
 
-			self.ballData = info;
-			self.$ball.css({left: info.x, top: info.y});
+			for(var i=1; i<num; i++) self.ballData[i-1] = self.ballData[i];
+			self.ballData[num-1] = info;
 		},
 
 
