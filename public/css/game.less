@@ -2,21 +2,24 @@
 #container {
 	position: absolute;
 	left: 50%; top: 50%;
-	margin: -264px 0 0 -300px;
-	background: #fff;
-	width: 600px;
-	height: 600px;
+	margin: -264px 0 0 -312px;
+	background: #ccc;
+	width: 624px;
+	height: 624px;
 	position: relative;
+	//background: url("/images/death.png");
+	background-size: 100% 100%;
 
-	#cvs_ball {
+	#canvas {
 		display: block;
 		width: 100%; height: 100%;
+		outline: none;
 	}
 }
 
 
 .player {
-	position: absolute; background: #ccc; 
+	position: absolute; 
 
 	.paddle { position: absolute; box-shadow: inset 0 0 1px #000; }
 	.middle {
@@ -29,33 +32,27 @@
 
 	&.player-horizontal {
 		width: 100%; height: 13px; text-align: center;
-		.paddle { width: 100px; height: 12px; }
 	}
 	&.player-vertical {
 		height: 100%; top: 0; width: 13px;
-		.paddle { width: 12px; height: 100px; }
 		.middle { top: 50%; position: absolute; margin-top: -1em; }
 	}
 }
 
 #player1 {
 	border-radius: 12px 12px 0 0; top: -13px;
-	.paddle { top: 0; left: 250px; background: red; border-radius: 12px 12px 0 0; }
 	.middle { top: -30px; }
 }
 #player2 {
 	border-radius: 0 12px 12px 0; right: -13px;
-	.paddle { right: 0; top: 250px; background: green; border-radius: 0 12px 12px 0; }
 	.middle { right: -100px; }
 }
 #player3 {
 	border-radius: 0 0 12px 12px; bottom: -13px;
-	.paddle { bottom: 0; left: 250px; background: blue; border-radius: 0 0 12px 12px; }
 	.middle { bottom: -30px; }
 }
 #player4 {
 	border-radius: 12px 0 0 12px; left: -13px;
-	.paddle { left: 0; top: 250px; background: yellow; border-radius: 12px 0 0 12px; }
 	.middle { left: -100px; }
 }
 
