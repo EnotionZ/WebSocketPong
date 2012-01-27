@@ -43,24 +43,24 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			// Draw paddles
 			var plr, pwidth, pheight, pleft, ptop;
-			for(var id in gc.players) {
-				if(gc.players.hasOwnProperty(id)) {
-					plr = gc.players[id];
-					pleft = plr.coord.left;
-					ptop = plr.coord.top;
+			for(i=0; i<4; i++) {
+				plr = gc.players[i];
+				if(typeof plr === "undefined") continue;
 
-					if(plr.orientation === "horizontal") {
-						pwidth = plr.paddleSize;
-						pheight = plr.paddleHeight;
-						pleft+=PADDLEHEIGHT;
-					} else {
-						pheight = plr.paddleSize;
-						pwidth = plr.paddleHeight;
-						ptop+=PADDLEHEIGHT;
-					}
-					p.fill(plr.displayColor);
-					p.rect(pleft, ptop, pwidth, pheight);
+				pleft = plr.coord.left;
+				ptop = plr.coord.top;
+
+				if(plr.orientation === "horizontal") {
+					pwidth = plr.paddleSize;
+					pheight = plr.paddleHeight;
+					pleft+=PADDLEHEIGHT - pwidth/2;
+				} else {
+					pheight = plr.paddleSize;
+					pwidth = plr.paddleHeight;
+					ptop+=PADDLEHEIGHT - pheight/2;
 				}
+				p.fill(plr.displayColor);
+				p.rect(pleft, ptop, pwidth, pheight);
 			}
 		};
 	};
@@ -128,28 +128,25 @@ require(["js/faye_client", "js/spine"], function(client){
 			// If you're a publisher and publishing to yourself without a selfPublish flag
 			// you're updating paddle from a subscribe... you can't update yourself...
 			// ..to ensure that a player sees the response of their paddle movement right away
-			if(this.isPublisher && info.id == this.id && !selfPublish) {
+			if(this.isPublisher && info.pos == this.pos && !selfPublish) {
 				return false;
 			}
 
 			var self = this, position;
-			var maxPos = gc.boardWidth-self.paddleSize/2;
-
 			var coord = self.coord;
 
 			if(self.orientation === "horizontal") {
-				position = info.left - self.paddleSize/2;
-				position = self.fixPosition(position, maxPos);
-				coord.left = position;
+				coord.left = info.left;
 			} else {
-				position = info.top - self.paddleSize/2;
-				position = self.fixPosition(position, maxPos);
-				coord.top = position;
+				coord.top = info.top;
 			}
 		},
 
-		fixPosition: function(val, max) {
-			if(val < 0) val = 0;
+		fixPosition: function(val) {
+			var min = this.paddleSize/2;
+			var max = gc.boardWidth - min;
+
+			if(val < min) val = min;
 			else if(val > max) val = max;
 			return val;
 		},
@@ -160,16 +157,15 @@ require(["js/faye_client", "js/spine"], function(client){
 		registerPublisher: function() {
 			var self = this;
 			var id = this.id;
-			var maxPos = gc.boardWidth-self.paddleSize/2;
 			var info = {pos: self.pos, id: id };
 
 			self.setLabel("YOU");
 			self.isPublisher = true;
-			self.publisherID = self.id;
 
 			$html.mousemove(function(e) {
-				info.left = self.fixPosition(e.clientX-gc.cLeft, maxPos);
-				info.top = self.fixPosition(e.clientY-gc.cTop, maxPos);
+				// These positions indicate value of center/middle of paddle
+				info.left = self.fixPosition(e.clientX-gc.cLeft);
+				info.top = self.fixPosition(e.clientY-gc.cTop);
 
 				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
@@ -186,7 +182,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.$name = $("<span/>").addClass("name-label label default");
 			this.$lives = $("<span/>").addClass("lives label important");
 			this.$score = $("<span/>").addClass("score label success");
-			this.setLabel("Player: "+this.pos);
+			this.setLabel("Player: "+(this.pos+1));
 			this.updateLives(0);
 			this.updateScore(0);
 
@@ -217,19 +213,18 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.$board = $("#container");
 			self.setOffset();
 
-			self.ballData = [];
-			self.bdcount = 60;
+			self.ballData = [];     // Stack of ball position data (with history)
+			self.bdcount = 60;      // Number of history data to keep in stack
 
-			self.players = {};
-			self.playersArr = [];
-			self.specsArr = [];
+			self.players = [];      // Array of players index is position
+			self.specsArr = [];     // Array of spectators
+
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
 
 			client.subscribe(path + '/join', function(info) { self.userJoined(info); });
 			client.subscribe(path + '/ball', function(info) { self.updateBall(info); });
 			client.subscribe(path + '/coord', function(info) { self.subscribedMovement(info); });
-
 			client.subscribe(path + '/contact', function(info) { self.checkContact(info.player, info.hit); });
 
 			self.showNameInput();
@@ -250,13 +245,12 @@ require(["js/faye_client", "js/spine"], function(client){
 
 
 		checkContact: function(player, hit) {
-			var _player = this.players[player.id];
-			if(typeof _player === "undefined") return false;
+			var self = this;
+			var _player = self.players[player.pos];
 
+			if(typeof _player === "undefined") return false;
 			_player[hit ? "hitPaddle" : "hitWall"](player.lives, player.score);
 		},
-
-		getPlayer: function(pos) { return this.players[this.playersArr[pos]]; },
 
 		showNameInput: function() {
 			var self = this;
@@ -285,12 +279,17 @@ require(["js/faye_client", "js/spine"], function(client){
 		 */
 		setOffset: function() {
 			var offset = this.$board.offset();
-			this.cLeft = offset.left;
-			this.cTop = offset.top;
+			this.cLeft = offset.left+PADDLEHEIGHT;
+			this.cTop = offset.top+PADDLEHEIGHT;
 		},
 
 		subscribedMovement: function(info) {
-			this.players[info.id].updatePaddle({ left: info.left, top: info.top, id: info.id });
+			var self = this;
+			self.players[info.pos].updatePaddle({
+				left: info.left,
+				top: info.top,
+				pos: info.pos
+			});
 		},
 
 		userJoined: function(obj) {
@@ -305,24 +304,25 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			// Creates player controllers
 			for(var i=0; i<playerCount; i++) {
+				if(!playersData[i]) continue;
+
 				id = playersData[i].id;
 				name = playersData[i].name;
 
 				idArr.push(id);
 
 				// Registers a player on the board only if they haven't yet
-				if(!self.players[id]) {
-					self.playersArr.push(id);
-					self.players[id] = new PlayerController({id: id, pos: i, name: name});
+				if(!self.players[i]) {
+					self.players[i] = new PlayerController({id: id, pos: i, name: name});
 
 					// If the current paddle's ID matches the subscriber, make user a publisher
-					if(id === self.id) self.players[id].registerPublisher();
+					if(id === self.id) self.players[i].registerPublisher();
 				}
 			}
 
 			// If you're not a player or spectator(yet), show spectator message
 			if(idArr.indexOf(self.id)<0 && self.specsArr.indexOf(self.id)<0) {
-				if(obj.gameEnded) self.showLoss(self.players[obj.loser.id]);
+				if(obj.gameEnded) self.showLoss(self.players[obj.loser.pos]);
 				else self.showSpectatorNotice();
 			}
 
