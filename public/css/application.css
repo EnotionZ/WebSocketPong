@@ -188,32 +188,32 @@ body {
   position: absolute;
   margin-top: -1em;
 }
-#player1 {
+#player0 {
   border-radius: 12px 12px 0 0;
   top: -13px;
 }
-#player1 .middle {
+#player0 .middle {
   top: -30px;
 }
-#player2 {
+#player1 {
   border-radius: 0 12px 12px 0;
   right: -13px;
 }
-#player2 .middle {
+#player1 .middle {
   right: -100px;
 }
-#player3 {
+#player2 {
   border-radius: 0 0 12px 12px;
   bottom: -13px;
 }
-#player3 .middle {
+#player2 .middle {
   bottom: -30px;
 }
-#player4 {
+#player3 {
   border-radius: 12px 0 0 12px;
   left: -13px;
 }
-#player4 .middle {
+#player3 .middle {
   left: -100px;
 }
 .notice {

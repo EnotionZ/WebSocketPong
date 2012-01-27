@@ -86,19 +86,19 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			// set orientation and initial position
 			self.coord = {left: BOARDSIZE/2, top: BOARDSIZE/2};
-			if(self.pos%2===1) {
+			if(self.pos%2===0) {
 				self.orientation = "horizontal";
-				self.coord.top = self.pos === 1 ? 0 : BOARDSIZE+self.paddleHeight;
+				self.coord.top = self.pos === 0 ? 0 : BOARDSIZE+self.paddleHeight;
 			} else {
 				self.orientation = "vertical";
-				self.coord.left = self.pos === 4 ? 0 : BOARDSIZE+self.paddleHeight;
+				self.coord.left = self.pos === 3 ? 0 : BOARDSIZE+self.paddleHeight;
 			}
 
 			switch(self.pos) {
+				case 0: self.color = 0xfffff000; break;
 				case 1: self.color = 0xffff0000; break;
 				case 2: self.color = 0xff00ff00; break;
 				case 3: self.color = 0xff0000ff; break;
-				case 4: self.color = 0xfffff000; break;
 			}
 			self.displayColor = self.color;
 
@@ -161,16 +161,14 @@ require(["js/faye_client", "js/spine"], function(client){
 		 */
 		registerPublisher: function() {
 			var self = this;
-			var pos = this.pos-1;
 			var id = this.id;
 			var maxPos = gc.boardWidth-self.paddleSize/2;
-			var info = {pos: pos, id: id, left: 300, top: 300};
+			var info = {pos: self.pos, id: id };
 
 			self.setLabel("YOU");
 			self.isPublisher = true;
 			self.publisherID = self.id;
 
-			client.publish('/games/' + GAME_ID + '/coord', info);
 			$html.mousemove(function(e) {
 				info.left = self.fixPosition(e.clientX-gc.cLeft, maxPos);
 				info.top = self.fixPosition(e.clientY-gc.cTop, maxPos);
@@ -317,7 +315,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				// Registers a player on the board only if they haven't yet
 				if(!self.players[id]) {
 					self.playersArr.push(id);
-					self.players[id] = new PlayerController({id: id, pos: i+1, name: name});
+					self.players[id] = new PlayerController({id: id, pos: i, name: name});
 
 					// If the current paddle's ID matches the subscriber, make user a publisher
 					if(id === self.id) self.players[id].registerPublisher();
