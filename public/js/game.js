@@ -33,7 +33,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			p.background(0,0);
 
 			// Draw ball
-			p.fill(150, 153);
+			p.fill(0xffffffff, 153);
 			for(var i=0; i<bdSize; i++) {
 				currBd = bd[i];
 				if(typeof currBd === "object") {
