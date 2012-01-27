@@ -82,6 +82,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.id = opts.id;
 			self.pos = opts.pos;
 			self.name = opts.name;
+			self.isPublisher = false;
 
 			// set orientation and initial position
 			self.coord = {left: BOARDSIZE/2, top: BOARDSIZE/2};
@@ -112,14 +113,11 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.displayColor = 0xff666666;
 			setTimeout(function(){ self.displayColor = self.color; }, 200);
 
-			console.log("Hit: " + self.name);
 			self.updateScore(score);
 		},
 
 		hitWall: function(lives, score) {
 			var self = this;
-			
-			console.log("Miss: " + self.name);
 			self.updateLives(lives);
 			if(lives <= 0) gc.showLoss(self);
 		},
@@ -128,7 +126,14 @@ require(["js/faye_client", "js/spine"], function(client){
 		/**
 		 * Processing a subscribed mouse event triggered by one of the players
 		 */
-		movePaddle: function(info) {
+		updatePaddle: function(info, selfPublish) {
+			// If you're a publisher and publishing to yourself without a selfPublish flag
+			// you're updating paddle from a subscribe... you can't update yourself...
+			// ..to ensure that a player sees the response of their paddle movement right away
+			if(this.isPublisher && info.id == this.id && !selfPublish) {
+				return false;
+			}
+
 			var self = this, position;
 			var maxPos = gc.boardWidth-self.paddleSize/2;
 
@@ -161,13 +166,16 @@ require(["js/faye_client", "js/spine"], function(client){
 			var maxPos = gc.boardWidth-self.paddleSize/2;
 			var info = {pos: pos, id: id, left: 300, top: 300};
 
-			this.setLabel("YOU");
+			self.setLabel("YOU");
+			self.isPublisher = true;
+			self.publisherID = self.id;
 
 			client.publish('/games/' + GAME_ID + '/coord', info);
 			$html.mousemove(function(e) {
 				info.left = self.fixPosition(e.clientX-gc.cLeft, maxPos);
 				info.top = self.fixPosition(e.clientY-gc.cTop, maxPos);
 
+				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
 			});
 		},
@@ -247,6 +255,8 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		checkContact: function(player, hit) {
 			var _player = this.players[player.id];
+			if(typeof _player === "undefined") return false;
+
 			_player[hit ? "hitPaddle" : "hitWall"](player.lives, player.score);
 		},
 
@@ -283,8 +293,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.cTop = offset.top;
 		},
 
-		subscribedMovement: function(info, forced) {
-			this.players[info.id].movePaddle({ left: info.left, top: info.top });
+		subscribedMovement: function(info) {
+			this.players[info.id].updatePaddle({ left: info.left, top: info.top, id: info.id });
 		},
 
 		userJoined: function(obj) {
