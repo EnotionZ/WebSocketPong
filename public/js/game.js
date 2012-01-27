@@ -4,6 +4,67 @@ require(["js/faye_client", "js/spine"], function(client){
 	var $html = $("html");
 	var $body = $("body");
 
+	var
+	PADDLEHEIGHT = 12,
+	BOARDSIZE = 600,
+	BALLSIZE = 20,
+	BALLRADIUS = BALLSIZE/2;
+
+
+	/**
+	 * Processing
+	 */
+	var Sketch = function(p) {
+		var bd = gc.ballData;
+		var bdSize = gc.bdcount;
+		var balloffset = BALLRADIUS+PADDLEHEIGHT;
+
+		p.setup = function() {
+			p.size(BOARDSIZE + 2*PADDLEHEIGHT,BOARDSIZE + 2*PADDLEHEIGHT);
+			p.frameRate(60);
+			p.smooth();
+			p.noStroke();
+			p.fill(150, 153);
+		};
+		p.draw = function() {
+			var currBd;
+
+			// Clear canvas & set transparent bg
+			p.background(0,0);
+
+			// Draw ball
+			p.fill(150, 153);
+			for(var i=0; i<bdSize; i++) {
+				currBd = bd[i];
+				if(typeof currBd === "object") {
+					p.ellipse(currBd.x+balloffset, currBd.y+balloffset, i/3, i/3);
+				}
+			}
+
+			// Draw paddles
+			var plr, pwidth, pheight, pleft, ptop;
+			for(var id in gc.players) {
+				if(gc.players.hasOwnProperty(id)) {
+					plr = gc.players[id];
+					pleft = plr.coord.left;
+					ptop = plr.coord.top;
+
+					if(plr.orientation === "horizontal") {
+						pwidth = plr.paddleSize;
+						pheight = plr.paddleHeight;
+						pleft+=PADDLEHEIGHT;
+					} else {
+						pheight = plr.paddleSize;
+						pwidth = plr.paddleHeight;
+						ptop+=PADDLEHEIGHT;
+					}
+					p.fill(plr.displayColor);
+					p.rect(pleft, ptop, pwidth, pheight);
+				}
+			}
+		};
+	};
+
 
 	/**
 	 * Player Controller
@@ -14,15 +75,30 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 
 			self.paddleSize = 100;
-			self.paddleHeight = 12;
-
-			self.wallColor = "#ccc";
+			self.paddleHeight = PADDLEHEIGHT;
 
 			self.id = opts.id;
 			self.pos = opts.pos;
 			self.name = opts.name;
-			self.coord = {left: 300, top: 300};
-			self.orientation = self.pos%2===1 ? "horizontal" : "vertical";
+			self.isPublisher = false;
+
+			// set orientation and initial position
+			self.coord = {left: BOARDSIZE/2, top: BOARDSIZE/2};
+			if(self.pos%2===1) {
+				self.orientation = "horizontal";
+				self.coord.top = self.pos === 1 ? 0 : BOARDSIZE+self.paddleHeight;
+			} else {
+				self.orientation = "vertical";
+				self.coord.left = self.pos === 4 ? 0 : BOARDSIZE+self.paddleHeight;
+			}
+
+			switch(self.pos) {
+				case 1: self.color = 0xffff0000; break;
+				case 2: self.color = 0xff00ff00; break;
+				case 3: self.color = 0xff0000ff; break;
+				case 4: self.color = 0xfffff000; break;
+			}
+			self.displayColor = self.color;
 
 			self.render();
 
@@ -31,19 +107,15 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		hitPaddle: function(lives, score) {
 			var self = this;
-			self.$paddle.css("background-color","#000");
-			setTimeout(function() { self.$paddle.css("background-color", self.color); }, 100);
 			
-			console.log("Hit: " + self.name);
+			self.displayColor = 0xff666666;
+			setTimeout(function(){ self.displayColor = self.color; }, 200);
+
 			self.updateScore(score);
 		},
 
 		hitWall: function(lives, score) {
 			var self = this;
-			self.el.css("background-color","#000");
-			setTimeout(function() { self.el.css("background-color", self.wallColor); }, 100);
-			
-			console.log("Miss: " + self.name);
 			self.updateLives(lives);
 			if(lives <= 0) gc.showLoss(self);
 		},
@@ -52,23 +124,26 @@ require(["js/faye_client", "js/spine"], function(client){
 		/**
 		 * Processing a subscribed mouse event triggered by one of the players
 		 */
-		movePaddle: function(info) {
+		updatePaddle: function(info, selfPublish) {
+			// If you're a publisher and publishing to yourself without a selfPublish flag
+			// you're updating paddle from a subscribe... you can't update yourself...
+			// ..to ensure that a player sees the response of their paddle movement right away
+			if(this.isPublisher && info.id == this.id && !selfPublish) {
+				return false;
+			}
+
 			var self = this, position;
 			var maxPos = gc.boardWidth-self.paddleSize/2;
 
 			var coord = self.coord;
-			self.coord.left = info.left;
-			self.coord.top = info.top;
 
 			if(self.orientation === "horizontal") {
 				position = info.left - self.paddleSize/2;
 				position = self.fixPosition(position, maxPos);
-				self.$paddle.css("left", position);
 				coord.left = position;
 			} else {
 				position = info.top - self.paddleSize/2;
 				position = self.fixPosition(position, maxPos);
-				self.$paddle.css("top", position);
 				coord.top = position;
 			}
 		},
@@ -89,13 +164,16 @@ require(["js/faye_client", "js/spine"], function(client){
 			var maxPos = gc.boardWidth-self.paddleSize/2;
 			var info = {pos: pos, id: id, left: 300, top: 300};
 
-			this.setLabel("YOU");
+			self.setLabel("YOU");
+			self.isPublisher = true;
+			self.publisherID = self.id;
 
 			client.publish('/games/' + GAME_ID + '/coord', info);
 			$html.mousemove(function(e) {
 				info.left = self.fixPosition(e.clientX-gc.cLeft, maxPos);
 				info.top = self.fixPosition(e.clientY-gc.cTop, maxPos);
 
+				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
 			});
 		},
@@ -107,7 +185,6 @@ require(["js/faye_client", "js/spine"], function(client){
 		render: function() {
 			var $middle = $("<div/>").addClass("middle");
 
-			this.$paddle = $("<div/>").addClass("paddle");
 			this.$name = $("<span/>").addClass("name-label label default");
 			this.$lives = $("<span/>").addClass("lives label important");
 			this.$score = $("<span/>").addClass("score label success");
@@ -119,11 +196,9 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			this.el = $("<div/>")
 			.appendTo(gc.$board)
-			.append(this.$paddle, $middle)
+			.append($middle)
 			.addClass("player player-" + this.orientation)
 			.attr("id", "player"+this.pos);
-
-			this.color = this.$paddle.css("background-color");
 		}
 	};
 
@@ -139,17 +214,19 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 			var path = '/games/'+GAME_ID;
 
-			self.boardWidth = 600;
-			self.ballSize = 20;
+			self.boardWidth = BOARDSIZE;
+			self.ballSize = BALLSIZE;
 			self.$board = $("#container");
-			self.$ball = $("#ball");
 			self.setOffset();
-			self.ballData = {};
+
+			self.ballData = [];
+			self.bdcount = 60;
 
 			self.players = {};
 			self.playersArr = [];
 			self.specsArr = [];
 			self.id = "p"+parseInt(Math.random()*999999,10);
+
 
 			client.subscribe(path + '/join', function(info) { self.userJoined(info); });
 			client.subscribe(path + '/ball', function(info) { self.updateBall(info); });
@@ -164,16 +241,20 @@ require(["js/faye_client", "js/spine"], function(client){
 			$(window).resize(function(){ self.setOffset(); });
 		},
 
+
 		updateBall: function(info) {
 			var self = this;
+			var num = self.bdcount;
 
-			self.ballData = info;
-			self.$ball.css({left: info.x, top: info.y});
+			for(var i=1; i<num; i++) self.ballData[i-1] = self.ballData[i];
+			self.ballData[num-1] = info;
 		},
 
 
 		checkContact: function(player, hit) {
 			var _player = this.players[player.id];
+			if(typeof _player === "undefined") return false;
+
 			_player[hit ? "hitPaddle" : "hitWall"](player.lives, player.score);
 		},
 
@@ -196,7 +277,6 @@ require(["js/faye_client", "js/spine"], function(client){
 						id: self.id,
 						name: self.subName
 					}
-					//client.publish('/games/' + GAME_ID + '/join', joinEvent);
 					$.post("/games/" + GAME_ID + "/players/", joinEvent);
 				}
 			});
@@ -211,8 +291,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.cTop = offset.top;
 		},
 
-		subscribedMovement: function(info, forced) {
-			this.players[info.id].movePaddle({ left: info.left, top: info.top });
+		subscribedMovement: function(info) {
+			this.players[info.id].updatePaddle({ left: info.left, top: info.top, id: info.id });
 		},
 
 		userJoined: function(obj) {
@@ -273,12 +353,14 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		showLoss: function(loser) {
 			var $msg = $("<div/>")
-				.appendTo($body)
-				.addClass("notice")
-				.html("<span>"+loser.name + " died! Game Over!!</span>");
+			.appendTo($body)
+			.addClass("notice")
+			.html("<span>"+loser.name + " died! Game Over!!</span>")
+			.click(function() { $msg.remove(); });
 		}
 	};
-	var gc = new GameController();
 
+	var gc = new GameController();
+	var processing = new Processing(document.getElementById("canvas"), Sketch);
 
 });

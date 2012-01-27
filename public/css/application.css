@@ -148,25 +148,21 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin: -264px 0 0 -300px;
-  background: #fff;
-  width: 600px;
-  height: 600px;
+  margin: -264px 0 0 -312px;
+  background: #ccc;
+  width: 624px;
+  height: 624px;
   position: relative;
+  background-size: 100% 100%;
 }
-#ball {
-  position: absolute;
-  left: 300px;
-  top: 300px;
-  width: 20px;
-  height: 20px;
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: inset 0 0 9px #000;
+#container #canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  outline: none;
 }
 .player {
   position: absolute;
-  background: #ccc;
 }
 .player .paddle {
   position: absolute;
@@ -183,18 +179,10 @@ body {
   height: 13px;
   text-align: center;
 }
-.player.player-horizontal .paddle {
-  width: 100px;
-  height: 12px;
-}
 .player.player-vertical {
   height: 100%;
   top: 0;
   width: 13px;
-}
-.player.player-vertical .paddle {
-  width: 12px;
-  height: 100px;
 }
 .player.player-vertical .middle {
   top: 50%;
@@ -205,24 +193,12 @@ body {
   border-radius: 12px 12px 0 0;
   top: -13px;
 }
-#player1 .paddle {
-  top: 0;
-  left: 250px;
-  background: red;
-  border-radius: 12px 12px 0 0;
-}
 #player1 .middle {
   top: -30px;
 }
 #player2 {
   border-radius: 0 12px 12px 0;
   right: -13px;
-}
-#player2 .paddle {
-  right: 0;
-  top: 250px;
-  background: green;
-  border-radius: 0 12px 12px 0;
 }
 #player2 .middle {
   right: -100px;
@@ -231,24 +207,12 @@ body {
   border-radius: 0 0 12px 12px;
   bottom: -13px;
 }
-#player3 .paddle {
-  bottom: 0;
-  left: 250px;
-  background: blue;
-  border-radius: 0 0 12px 12px;
-}
 #player3 .middle {
   bottom: -30px;
 }
 #player4 {
   border-radius: 12px 0 0 12px;
   left: -13px;
-}
-#player4 .paddle {
-  left: 0;
-  top: 250px;
-  background: yellow;
-  border-radius: 12px 0 0 12px;
 }
 #player4 .middle {
   left: -100px;
