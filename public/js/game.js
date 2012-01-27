@@ -60,7 +60,7 @@ require(["js/faye_client", "js/spine"], function(client){
 					ptop+=PADDLEHEIGHT - pheight/2;
 				}
 				p.fill(plr.displayColor);
-				p.rect(pleft, ptop, pwidth, pheight);
+				p.rect(pleft, ptop, pwidth, pheight, 6, 6, 6, 6);
 			}
 		};
 	};
@@ -69,8 +69,7 @@ require(["js/faye_client", "js/spine"], function(client){
 	/**
 	 * Player Controller
 	 */
-	var PlayerController = function(opts) { this.init(opts); };
-	PlayerController.prototype = {
+	var PlayerController = Spine.Controller.sub({
 		init: function(opts) {
 			var self = this;
 
@@ -177,7 +176,6 @@ require(["js/faye_client", "js/spine"], function(client){
 		updateScore: function(val) { this.$score.html(val); },
 
 		render: function() {
-			var $middle = $("<div/>").addClass("middle");
 
 			this.$name = $("<span/>").addClass("name-label label default");
 			this.$lives = $("<span/>").addClass("lives label important");
@@ -186,15 +184,13 @@ require(["js/faye_client", "js/spine"], function(client){
 			this.updateLives(0);
 			this.updateScore(0);
 
-			$middle.append(this.$name, this.$lives, this.$score);
+			var $middle = $("<div/>")
+				.addClass("middle")
+				.append(this.$name, this.$lives, this.$score);
 
-			this.el = $("<div/>")
-			.appendTo(gc.$board)
-			.append($middle)
-			.addClass("player player-" + this.orientation)
-			.attr("id", "player"+this.pos);
+			this.el.append($middle).addClass("player player-" + this.orientation);
 		}
-	};
+	});
 
 
 
@@ -202,8 +198,7 @@ require(["js/faye_client", "js/spine"], function(client){
 	/**
 	 * Game Controller
 	 */
-	var GameController = function(opts) { this.init(opts); };
-	GameController.prototype = {
+	var GameController = Spine.Controller.sub({
 		init: function(opts) {
 			var self = this;
 			var path = '/games/'+GAME_ID;
@@ -313,7 +308,13 @@ require(["js/faye_client", "js/spine"], function(client){
 
 				// Registers a player on the board only if they haven't yet
 				if(!self.players[i]) {
-					self.players[i] = new PlayerController({id: id, pos: i, name: name});
+					var el = $("<div/>").appendTo(this.$board).attr("id", "player"+i);
+					self.players[i] = new PlayerController({
+						el: "#player"+i,
+						id: id,
+						pos: i,
+						name: name
+					});
 
 					// If the current paddle's ID matches the subscriber, make user a publisher
 					if(id === self.id) self.players[i].registerPublisher();
@@ -356,9 +357,9 @@ require(["js/faye_client", "js/spine"], function(client){
 			.html("<span>"+loser.name + " died! Game Over!!</span>")
 			.click(function() { $msg.remove(); });
 		}
-	};
+	});
 
-	var gc = new GameController();
+	var gc = new GameController({el: "body"});
 	var processing = new Processing(document.getElementById("canvas"), Sketch);
 
 });
