@@ -96,7 +96,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				case 0: self.color = 0xfffff000; break;
 				case 1: self.color = 0xffff0000; break;
 				case 2: self.color = 0xff00ff00; break;
-				case 3: self.color = 0xff0000ff; break;
+				case 3: self.color = 0xffff8000; break;
 			}
 			self.displayColor = self.color;
 
