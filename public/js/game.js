@@ -45,7 +45,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 		drawBall = function() {
 			var currBd;
-			p.fill(0xffffffff, 50);
+			p.fill(gc.ballColor, 50);
 			for(var i=0; i<bdSize-1; i++) {
 				currBd = bd[i];
 				if(typeof currBd === "object") {
@@ -140,6 +140,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		hitPaddle: function(lives, score) {
 			var self = this;
 			
+			gc.ballColor = self.color;
 			self.displayColor = 0xff666666;
 			setTimeout(function(){ self.displayColor = self.color; }, 200);
 
@@ -148,6 +149,7 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		hitWall: function(lives, score) {
 			var self = this;
+			gc.ballColor = 0xff000000;
 			self.updateLives(lives);
 			if(lives <= 0) gc.showLoss(self);
 		},
@@ -244,6 +246,7 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			self.ballData = [];     // Stack of ball position data (with history)
 			self.bdcount = 60;      // Number of history data to keep in stack
+			self.ballColor = 0xff000000;
 
 			self.players = [];      // Array of players index is position
 			self.specsArr = [];     // Array of spectators
