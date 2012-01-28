@@ -20,6 +20,7 @@ require(["js/faye_client", "js/spine"], function(client){
 		bd = gc.ballData,
 		bdSize = gc.bdcount,
 		balloffset = BALLRADIUS+PADDLEHEIGHT,
+		ballImg = p.loadImage("../images/ball.png"),
 
 		// Four moving ellipses
 		iR= 1500, bgArcs = [];
@@ -44,13 +45,16 @@ require(["js/faye_client", "js/spine"], function(client){
 		},
 		drawBall = function() {
 			var currBd;
-			p.fill(0xffffffff, 153);
-			for(var i=0; i<bdSize; i++) {
+			p.fill(0xffffffff, 50);
+			for(var i=0; i<bdSize-1; i++) {
 				currBd = bd[i];
 				if(typeof currBd === "object") {
 					p.ellipse(currBd.x+balloffset, currBd.y+balloffset, i/3, i/3);
 				}
 			}
+			currBd = bd[bdSize-1];
+			if(typeof currBd === "object") p.image(ballImg, currBd.x+12-3, currBd.y+12-3);
+
 		},
 		drawPaddles = function() {
 			// Draw paddles
