@@ -1,11 +1,15 @@
+@BOARDSIZE: 600px;
+@CVSPADDING: 40px;
+@TOTALSIZE: @BOARDSIZE+@CVSPADDING*2;
+@HALFSIZE: @TOTALSIZE/2;
 
 #container {
 	position: absolute;
 	left: 50%; top: 50%;
-	margin: -340px 0 0 -312px;
+	margin: -@HALFSIZE 0 0 -@HALFSIZE;
 	background: #ccc;
-	width: 680px;
-	height: 680px;
+	width: @TOTALSIZE;
+	height: @TOTALSIZE;
 	position: relative;
 	box-shadow: 0 0 1px rgba(255,255,255,.5);
 
@@ -18,7 +22,7 @@
 	&:before {
 		position: absolute; left: 0; top: 0;
 		width: 100%; height: 100%; content: "";
-		background: -webkit-gradient(radial, 300 50%, 400, 300 50%, 37, from(rgba(0,0,0,0.4)), to(rgba(255,255,255,0.35)));
+		background: -webkit-gradient(radial, 340 50%, 400, 340 50%, 37, from(rgba(0,0,0,0.4)), to(rgba(255,255,255,0.35)));
 		//background: -moz-radial-gradient(300px 50%, circle, rgba(0,0,0,0.4) 400px, rgba(255,255,255,0.35) 37px);
 	}
 	&:after {
