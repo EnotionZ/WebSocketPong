@@ -44,15 +44,17 @@ require(["js/faye_client", "js/spine"], function(client){
 			}
 		},
 		drawBall = function() {
-			var currBd;
-			p.fill(gc.ballColor, 50);
+			var currBd, rnd1, rnd2;
 			for(var i=0; i<bdSize-1; i++) {
+				p.fill(gc.ballColor, i*3);
 				currBd = bd[i];
 				if(typeof currBd === "object") {
-					p.ellipse(currBd.x+balloffset, currBd.y+balloffset, i/3, i/3);
+					rnd1 = Math.random()*10-5;
+					rnd2 = Math.random()*10-5;
+					p.ellipse(currBd.x+balloffset+rnd1, currBd.y+balloffset+rnd2, i/3, i/3);
 				}
 			}
-			currBd = bd[bdSize-1];
+			currBd = bd[bd.length-1];
 			if(typeof currBd === "object") p.image(ballImg, currBd.x+12-3, currBd.y+12-3);
 
 		},
@@ -393,6 +395,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			.addClass("notice")
 			.html("<span>"+loser.name + " died! Game Over!!</span>")
 			.click(function() { $msg.remove(); });
+
+			processing.exit();
 		}
 	});
 
