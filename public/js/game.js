@@ -15,24 +15,35 @@ require(["js/faye_client", "js/spine"], function(client){
 	 * Processing
 	 */
 	var Sketch = function(p) {
-		var bd = gc.ballData;
-		var bdSize = gc.bdcount;
-		var balloffset = BALLRADIUS+PADDLEHEIGHT;
+		var
 
-		p.setup = function() {
-			p.size(BOARDSIZE + 2*PADDLEHEIGHT,BOARDSIZE + 2*PADDLEHEIGHT);
-			p.frameRate(60);
-			p.smooth();
-			p.noStroke();
-			p.fill(150, 153);
-		};
-		p.draw = function() {
+		bd = gc.ballData,
+		bdSize = gc.bdcount,
+		balloffset = BALLRADIUS+PADDLEHEIGHT,
+
+		// Four moving ellipses
+		iR= 1500, bgArcs = [];
+		bgArcs.push({x:0, y: 0, r1: iR, r2: iR });
+		bgArcs.push({x:BOARDSIZE/2, y: -BOARDSIZE/4, r1: iR+BOARDSIZE/3, r2: iR });
+		bgArcs.push({x:BOARDSIZE/2, y: BOARDSIZE*1.3, r1: iR+BOARDSIZE/3, r2: iR });
+		bgArcs.push({x:BOARDSIZE*1.25, y: BOARDSIZE, r1: iR, r2: iR+BOARDSIZE/3 });
+
+
+		var
+		drawBackground = function() {
+			var c, x, y, r1, r2;
+			var mms = p.hour()*p.minute()*p.millis();
+			var theta = 2*Math.PI*mms/3600000;
+			p.fill(0xff71a3cc, 80);
+			for(var i=0; i<4; i++) {
+				c = bgArcs[i];
+				x = c.x + 20*Math.cos(theta)*(i%2===0 ? -1: 1);
+				y = c.y + 20*Math.sin(theta)*(i%2===0 ? -1: 1);
+				p.ellipse(x, y, c.r1, c.r2);
+			}
+		},
+		drawBall = function() {
 			var currBd;
-
-			// Clear canvas & set transparent bg
-			p.background(0,0);
-
-			// Draw ball
 			p.fill(0xffffffff, 153);
 			for(var i=0; i<bdSize; i++) {
 				currBd = bd[i];
@@ -40,7 +51,8 @@ require(["js/faye_client", "js/spine"], function(client){
 					p.ellipse(currBd.x+balloffset, currBd.y+balloffset, i/3, i/3);
 				}
 			}
-
+		},
+		drawPaddles = function() {
 			// Draw paddles
 			var plr, pwidth, pheight, pleft, ptop;
 			for(i=0; i<4; i++) {
@@ -62,6 +74,23 @@ require(["js/faye_client", "js/spine"], function(client){
 				p.fill(plr.displayColor);
 				p.rect(pleft, ptop, pwidth, pheight, 6, 6, 6, 6);
 			}
+		};
+
+
+		p.setup = function() {
+			p.size(BOARDSIZE + 2*PADDLEHEIGHT,BOARDSIZE + 2*PADDLEHEIGHT);
+			p.frameRate(60);
+			p.smooth();
+			p.noStroke();
+			p.fill(150, 153);
+		};
+		p.draw = function() {
+			// Clear canvas & set transparent bg
+			p.background(0xff2c3c48);
+
+			drawBackground();
+			drawBall();
+			drawPaddles();
 		};
 	};
 
@@ -165,6 +194,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				// These positions indicate value of center/middle of paddle
 				info.left = self.fixPosition(e.clientX-gc.cLeft);
 				info.top = self.fixPosition(e.clientY-gc.cTop);
+				info.timestamp = (new Date()).getTime();
 
 				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
