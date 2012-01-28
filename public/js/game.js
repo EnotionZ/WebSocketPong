@@ -6,9 +6,10 @@ require(["js/faye_client", "js/spine"], function(client){
 
 	var
 	PADDLEHEIGHT = 12,
-	BOARDSIZE = 600,
-	BALLSIZE = 20,
-	BALLRADIUS = BALLSIZE/2;
+	BOARDSIZE =    600,
+	CVSPADDING =   40,
+	BALLSIZE =     20,
+	BALLRADIUS =   BALLSIZE/2;
 
 
 	/**
@@ -19,7 +20,7 @@ require(["js/faye_client", "js/spine"], function(client){
 
 		bd = gc.ballData,
 		bdSize = gc.bdcount,
-		balloffset = BALLRADIUS+PADDLEHEIGHT,
+		balloffset = BALLRADIUS+CVSPADDING,
 		ballImg = p.loadImage("../images/ball.png"),
 
 		// Four moving ellipses
@@ -55,8 +56,9 @@ require(["js/faye_client", "js/spine"], function(client){
 				}
 			}
 			currBd = bd[bd.length-1];
-			if(typeof currBd === "object") p.image(ballImg, currBd.x+12-3, currBd.y+12-3);
-
+			// ball size is 20, justin's ball UI is 26, the offset below is a temp fix
+			if(typeof currBd === "object")
+				p.image(ballImg, currBd.x+CVSPADDING-3, currBd.y+CVSPADDING-3);
 		},
 		drawPaddles = function() {
 			// Draw paddles
@@ -71,11 +73,13 @@ require(["js/faye_client", "js/spine"], function(client){
 				if(plr.orientation === "horizontal") {
 					pwidth = plr.paddleSize;
 					pheight = plr.paddleHeight;
-					pleft+=PADDLEHEIGHT - pwidth/2;
+					pleft+=CVSPADDING - pwidth/2;
+					ptop+=CVSPADDING - pheight;
 				} else {
 					pheight = plr.paddleSize;
 					pwidth = plr.paddleHeight;
-					ptop+=PADDLEHEIGHT - pheight/2;
+					ptop+=CVSPADDING - pheight/2;
+					pleft+=CVSPADDING - pwidth;
 				}
 				p.fill(plr.displayColor);
 				p.rect(pleft, ptop, pwidth, pheight, 6, 6, 6, 6);
@@ -84,7 +88,7 @@ require(["js/faye_client", "js/spine"], function(client){
 
 
 		p.setup = function() {
-			p.size(BOARDSIZE + 2*PADDLEHEIGHT,BOARDSIZE + 2*PADDLEHEIGHT);
+			p.size(BOARDSIZE + 2*CVSPADDING,BOARDSIZE + 2*CVSPADDING);
 			p.frameRate(60);
 			p.smooth();
 			p.noStroke();
@@ -202,7 +206,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				// These positions indicate value of center/middle of paddle
 				info.left = self.fixPosition(e.clientX-gc.cLeft);
 				info.top = self.fixPosition(e.clientY-gc.cTop);
-				info.timestamp = (new Date()).getTime();
+				info.timestamp = processing.hour()*processing.minute()*processing.millis();
 
 				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
@@ -302,7 +306,7 @@ require(["js/faye_client", "js/spine"], function(client){
 					var joinEvent = {
 						id: self.id,
 						name: self.subName
-					}
+					};
 					$.post("/games/" + GAME_ID + "/players/", joinEvent);
 				}
 			});
@@ -313,8 +317,8 @@ require(["js/faye_client", "js/spine"], function(client){
 		 */
 		setOffset: function() {
 			var offset = this.$board.offset();
-			this.cLeft = offset.left+PADDLEHEIGHT;
-			this.cTop = offset.top+PADDLEHEIGHT;
+			this.cLeft = offset.left+CVSPADDING;
+			this.cTop = offset.top+CVSPADDING;
 		},
 
 		subscribedMovement: function(info) {
