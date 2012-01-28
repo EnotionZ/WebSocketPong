@@ -22,6 +22,8 @@ require(["js/faye_client", "js/spine"], function(client){
 		bdSize = gc.bdcount,
 		balloffset = BALLRADIUS+CVSPADDING,
 		ballImg = p.loadImage("../images/ball.png"),
+		htrack = p.loadImage("../images/track-horizontal.png"),
+		vtrack = p.loadImage("../images/track-vertical.png"),
 
 		// Four moving ellipses
 		iR= 1500, bgArcs = [];
@@ -61,8 +63,15 @@ require(["js/faye_client", "js/spine"], function(client){
 				p.image(ballImg, currBd.x+CVSPADDING-3, currBd.y+CVSPADDING-3);
 		},
 		drawPaddles = function() {
-			// Draw paddles
 			var plr, pwidth, pheight, pleft, ptop;
+
+			// draw tracks
+			var toffb = 15, toffe = 6;  // track offsets, just make sure it added up to 21
+			p.image(htrack, CVSPADDING, toffb);
+			p.image(htrack, CVSPADDING, BOARDSIZE+CVSPADDING+toffe);
+			p.image(vtrack, toffb, CVSPADDING);
+			p.image(vtrack, BOARDSIZE+CVSPADDING+toffe, CVSPADDING);
+
 			for(i=0; i<4; i++) {
 				plr = gc.players[i];
 				if(typeof plr === "undefined") continue;
