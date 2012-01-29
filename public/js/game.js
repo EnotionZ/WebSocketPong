@@ -140,10 +140,10 @@ require(["js/faye_client", "js/spine"], function(client){
 			}
 
 			switch(self.pos) {
-				case 0: self.color = 0xfffff000; break;
-				case 1: self.color = 0xffff0000; break;
-				case 2: self.color = 0xff00ff00; break;
-				case 3: self.color = 0xffff8000; break;
+				case 0: self.color = 0xfffff000; self.colorHex = '#fff000'; break;
+				case 1: self.color = 0xffff0000; self.colorHex = '#ff0000'; break;
+				case 2: self.color = 0xff00ff00; self.colorHex = '#00ff00'; break;
+				case 3: self.color = 0xffff8000; self.colorHex = '#ff8000'; break;
 			}
 			self.displayColor = self.color;
 
@@ -156,6 +156,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 			
 			gc.ballColor = self.color;
+			$('body').animate({backgroundColor: $.Color(self.colorHex).transition("transparent", 0.95) }, 200).animate({backgroundColor: $.Color('#23272c').transition("transparent", 0.95) }, 500);
 			self.displayColor = 0xff666666;
 			setTimeout(function(){ self.displayColor = self.color; }, 200);
 
@@ -276,8 +277,48 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			self.showNameInput();
 
-			self.$spectators = $("#spectators");
-			$("#spectator_anchor").click(function(){ self.$spectators.toggle(); return false; });
+			self.$users = $("#users");
+			$("#chat-trigger").click(function(){ 
+				if($("#chat-wrapper").hasClass('active')){
+					$("#chat-left, #chat-right").fadeOut(400, function(){
+						$("#chat-container").show().animate({
+								height: '59px'
+							},{
+								complete: function(){
+									$("#chat-helper").hide();
+									$("#chat-container").hide();
+									$("#chat-wrapper").animate({
+											width: '60px'
+										},{
+											complete: function(){
+												$("#chat-wrapper").removeClass('active');
+											}
+										}
+									);
+								}
+							}
+						);
+					});
+				}else{
+					$("#chat-wrapper").addClass('active').animate({
+							width: '560px'
+						},{
+							complete: function(){
+								$("#chat-container").show().animate({
+										height: '180px'
+									},{
+										complete: function(){
+											$("#chat-left, #chat-right").fadeIn(400);
+										}
+									}
+								);
+								$("#chat-helper").show();
+							}
+						}
+					);
+				}
+				return false;
+			});
 			$(window).resize(function(){ self.setOffset(); });
 		},
 
@@ -371,6 +412,8 @@ require(["js/faye_client", "js/spine"], function(client){
 					// If the current paddle's ID matches the subscriber, make user a publisher
 					if(id === self.id) self.players[i].registerPublisher();
 				}
+				
+				self.$users.append("<li class='player-"+i+"'><span>"+name+"</span></li>");
 			}
 
 			// If you're not a player or spectator(yet), show spectator message
@@ -385,7 +428,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				name = specsData[i].name;
 				if(self.specsArr.indexOf(id)<0) {
 					self.specsArr.push(id);
-					self.$spectators.append("<li>"+name+"</li>");
+					self.$users.append("<li class='spectator'><span>"+name+"</span></li>");
 				}
 			}
 

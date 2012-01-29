@@ -3,32 +3,40 @@
 @TOTALSIZE: @BOARDSIZE+@CVSPADDING*2;
 @HALFSIZE: @TOTALSIZE/2;
 
-#container {
+#wrapper {
+	height: 100%;
+	width: 100%;
 	position: absolute;
-	left: 50%; top: 50%;
-	margin: -@HALFSIZE 0 0 -@HALFSIZE;
-	background: #ccc;
-	width: @TOTALSIZE;
-	height: @TOTALSIZE;
-	position: relative;
-	box-shadow: 0 0 1px rgba(255,255,255,.5);
+	top: 0;
+	left: 0;
+	
+	#container {
+		position: absolute;
+		left: 50%; top: 50%;
+		margin: -@HALFSIZE 0 0 -@HALFSIZE;
+		background: #ccc;
+		width: @TOTALSIZE;
+		height: @TOTALSIZE;
+		position: relative;
+		box-shadow: 0 0 1px rgba(255, 255, 255, 0.5), 0 0 150px rgba(255,255,255,.1);
 
-	#canvas {
-		display: block;
-		width: 100%; height: 100%;
-		outline: none;
-	}
+		#canvas {
+			display: block;
+			width: 100%; height: 100%;
+			outline: none;
+		}
 
-	&:before {
-		position: absolute; left: 0; top: 0;
-		width: 100%; height: 100%; content: "";
-		background: -webkit-gradient(radial, 340 50%, 400, 340 50%, 37, from(rgba(0,0,0,0.4)), to(rgba(255,255,255,0.35)));
-		//background: -moz-radial-gradient(300px 50%, circle, rgba(0,0,0,0.4) 400px, rgba(255,255,255,0.35) 37px);
-	}
-	&:after {
-		position: absolute; left: 0; top: 0;
-		width: 100%; height: 100%; content: "";
-		box-shadow: inset 0 0 12px #000, inset 0 0 8px #000;
+		&:before {
+			position: absolute; left: 0; top: 0;
+			width: 100%; height: 100%; content: "";
+			background: -webkit-gradient(radial, 340 50%, 400, 340 50%, 37, from(rgba(0,0,0,0.4)), to(rgba(255,255,255,0.35)));
+			//background: -moz-radial-gradient(300px 50%, circle, rgba(0,0,0,0.4) 400px, rgba(255,255,255,0.35) 37px);
+		}
+		&:after {
+			position: absolute; left: 0; top: 0;
+			width: 100%; height: 100%; content: "";
+			box-shadow: inset 0 0 12px #000, inset 0 0 8px #000;
+		}
 	}
 }
 
@@ -92,19 +100,103 @@
 	}
 }
 
-
-
 #menu {
-	position: absolute;
-	bottom: 10px; left: 0;
-	width: 100%; height: 18px;
-	#spectators {
-		position: absolute;
-		bottom: 20px;
-		background: #ddd;
-		font: 500 11px arial;
-		list-style-type: decimal;
-		list-style-position: inside;
-		padding: 6px;
+	#chat-wrapper {
+		background: url('../images/chat.png') no-repeat 15px 50%;
+		width: 60px;
+		height: 59px;
+		position: relative;
+		top: 450px;
+		left: -1px;
+		&.active {
+			background-color: #4b525d;
+			box-shadow: inset 0 2px 1px -2px rgba(255,255,255,.5), inset 0 -2px 1px -2px rgba(50,50,50,0.9), 0 5px 2px rgba(0, 0, 0, 0.25);
+			border: 1px solid #31373F;
+			border-bottom-right-radius: 7px;
+		}
+		#chat-trigger {
+			width: 60px;
+			height: 59px;
+			position: relative;
+			&:hover {
+				background-color: rgba(255,255,255,.1);
+			}
+		}
+		#chat-helper {
+			position: absolute;
+			bottom: 57px;
+			right: 0;
+			width: 472px;
+			height: 5px;
+			background-color: #4b525d;
+			display: none;
+			z-index: 3;
+		}
+		#chat-container {
+			position: absolute;
+			bottom: 59px;
+			right: -1px;
+			width: 472px;
+			height: 59px;
+			background-color: #4b525d;
+			box-shadow: inset 0 2px 1px -2px rgba(255,255,255,.5), inset 0 -2px 1px -2px rgba(50,50,50,0.9);
+			border: 1px solid #31373F;
+			border-top-left-radius: 7px;
+			border-top-right-radius: 7px;
+			display: none;
+		}
+		
+		#chat-left {
+			position: absolute;
+			z-index: 4;
+			bottom: 10px;
+			right: 120px;
+			display: none;
+			h4 {
+				color: #d3d3d3;
+				text-shadow: 0 1px rgba(0, 0, 0, .6);
+				line-height: 25px;
+			}
+			.inputBox {
+				position: relative;
+				display: block;
+				width: 330px;
+				padding: 5px;
+				background: #fff;
+				border: 1px solid #333;
+				border-radius: 4px;
+				box-shadow: inset 0 1px 1px rgba(0,0,0,.2);
+				color: #555;
+			}
+			#chat-msgs {
+				height: 153px;
+				margin-bottom: 5px;
+				.inputBox;
+			}
+			input {
+				.inputBox;
+			}
+		}
+		#chat-right {
+			position: absolute;
+			z-index: 4;
+			bottom: 10px;
+			right: 10px;
+			height: 200px;
+			width: 100px;
+			display: none;
+			ul#users {
+				li{
+					&.spectator { list-style: none; }
+					&.player-0 { color: #fff000; }
+					&.player-1 { color: #ff0000; }
+					&.player-2 { color: #00ff00; }
+					&.player-3 { color: #ff8000; }
+					span {
+						color: #fff;
+					}
+				}
+			}
+		}
 	}
 }
