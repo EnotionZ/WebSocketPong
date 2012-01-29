@@ -794,7 +794,7 @@ body {
   position: absolute;
   left: 50%;
   top: 50%;
-  margin: -340px 0 0 -340px;
+  margin: -340px 0 0 -310.5px;
   background: #ccc;
   width: 680px;
   height: 680px;
@@ -906,7 +906,8 @@ body {
   width: 60px;
   height: 59px;
   position: relative;
-  top: 450px;
+  top: 50%;
+  margin-top: 210px;
   left: -1px;
 }
 #menu #chat-wrapper.active {

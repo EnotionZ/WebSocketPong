@@ -3,6 +3,8 @@
 @TOTALSIZE: @BOARDSIZE+@CVSPADDING*2;
 @HALFSIZE: @TOTALSIZE/2;
 
+@MENUWIDTH: 59px;
+
 #wrapper {
 	height: 100%;
 	width: 100%;
@@ -13,7 +15,7 @@
 	#container {
 		position: absolute;
 		left: 50%; top: 50%;
-		margin: -@HALFSIZE 0 0 -@HALFSIZE;
+		margin: -@HALFSIZE 0 0 -@HALFSIZE+@MENUWIDTH/2;
 		background: #ccc;
 		width: @TOTALSIZE;
 		height: @TOTALSIZE;
@@ -106,7 +108,7 @@
 		width: 60px;
 		height: 59px;
 		position: relative;
-		top: 450px;
+		top: 50%; margin-top: 210px;
 		left: -1px;
 		&.active {
 			background-color: #4b525d;

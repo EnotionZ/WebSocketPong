@@ -36,8 +36,8 @@ require(["js/faye_client", "js/spine"], function(client){
 		var
 		drawBackground = function() {
 			var c, x, y, r1, r2;
-			var mms = p.hour()*p.minute()*p.millis();
-			var theta = 2*Math.PI*mms/3600000;
+			var ms = p.millis()+1;
+			var theta = 2*Math.PI*ms/10000;
 			p.fill(0xff71a3cc, 80);
 			for(var i=0; i<4; i++) {
 				c = bgArcs[i];
@@ -208,6 +208,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			var self = this;
 			var id = this.id;
 			var info = {pos: self.pos, id: id };
+			var p = processing;
 
 			self.setLabel("YOU");
 			self.isPublisher = true;
@@ -216,7 +217,9 @@ require(["js/faye_client", "js/spine"], function(client){
 				// These positions indicate value of center/middle of paddle
 				info.left = self.fixPosition(e.clientX-gc.cLeft);
 				info.top = self.fixPosition(e.clientY-gc.cTop);
-				info.timestamp = processing.hour()*processing.minute()*processing.millis();
+
+				// hour & minute + 1 in case it's midnight or 00 min, we don't get 0 timestamp
+				info.timestamp = (p.hour()+1)*(p.minute()+1)*p.millis();
 
 				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
