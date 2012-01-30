@@ -309,8 +309,13 @@ require(["js/faye_client", "js/spine"], function(client){
 		elements: {
 			"#chat-msgs-list":  "$chat",
 			"#chat-wrapper":    "$chatWrapper",
+			"#chat-container":  "$chatContainer",
 			"#users":           "$users"
 		},
+		events: {
+			"click #chat-trigger": "triggerChat"
+		},
+
 		init: function(opts) {
 			var self = this;
 			var path = '/games/'+GAME_ID;
@@ -339,48 +344,31 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			self.showNameInput();
 
-			$("#chat-trigger").click(function(){ 
-				if(self.$chatWrapper.hasClass('active')){
-					$("#chat-left, #chat-right").fadeOut(400, function(){
-						$("#chat-container").show().animate({
-								height: '59px'
-							},{
-								complete: function(){
-									$("#chat-helper").hide();
-									$("#chat-container").hide();
-									self.$chatWrapper.animate({
-											width: '60px'
-										},{
-											complete: function(){
-												self.$chatWrapper.removeClass('active');
-											}
-										}
-									);
-								}
-							}
-						);
-					});
-				}else{
-					self.$chatWrapper.addClass('active').animate({
-							width: '560px'
-						},{
-							complete: function(){
-								$("#chat-container").show().animate({
-										height: '180px'
-									},{
-										complete: function(){
-											$("#chat-left, #chat-right").fadeIn(400);
-										}
-									}
-								);
-								$("#chat-helper").show();
-							}
+			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		triggerChat: function() {
+			var self = this;
+			if(self.$chatWrapper.hasClass('active')){
+				$("#chat-left, #chat-right").fadeOut(400, function(){
+					self.$chatContainer.show().animate({ height: 59 }, function(){
+							$("#chat-helper").hide();
+							self.$chatContainer.hide();
+							self.$chatWrapper.animate({ width: 60 }, function(){
+								self.$chatWrapper.removeClass('active');
+							});
 						}
 					);
-				}
-				return false;
-			});
-			$(window).resize(function(){ self.setOffset(); });
+				});
+			} else {
+				self.$chatWrapper.addClass('active').animate({ width: 560 }, function(){
+					self.$chatContainer.show().animate({ height: 180 }, function(){
+						$("#chat-left, #chat-right").fadeIn(400);
+					});
+					$("#chat-helper").show();
+				});
+			}
+			return false;
 		},
 
 		msgReceived: function(info) {
