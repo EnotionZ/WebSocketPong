@@ -492,14 +492,13 @@ require(["js/faye_client", "js/spine"], function(client){
 				name = specsData[i].name;
 
 				if(!self.spectators[i]) {
-					if(obj.gameEnded) {
-						self.showLoss(self.players[obj.loser.pos]);
-					} else {
-						self.spectators[i] = new SpectatorController({
-							id: self.id,
-							name: name
-						});
-						if(id === self.id) self.spectators[i].registerChat();
+					self.spectators[i] = new SpectatorController({
+						id: self.id,
+						name: name
+					});
+					if(id === self.id) {
+						self.spectators[i].registerChat();
+						if(obj.gameEnded) self.showLoss(self.players[obj.loser.pos]);
 					}
 				}
 			}
