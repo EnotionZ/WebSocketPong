@@ -389,6 +389,7 @@ require(["js/faye_client", "js/spine"], function(client){
 				"<span class=\"name\">"+name+":</span>",
 				"<span class=\"message\">" + msg +"</span")
 			);
+			this.$chat.scrollTop(this.$chat.scrollTop() + this.$chat.height());
 		},
 
 

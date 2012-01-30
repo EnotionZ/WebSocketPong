@@ -987,6 +987,8 @@ body {
   list-style-position: inside;
   margin: 0;
   padding: 0;
+  height: 100%;
+  overflow: auto;
 }
 #menu #chat-wrapper #chat-left #chat-msgs ul li .name {
   font-weight: bold;
