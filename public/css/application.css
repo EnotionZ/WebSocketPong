@@ -795,7 +795,6 @@ body {
   left: 50%;
   top: 50%;
   margin: -340px 0 0 -310.5px;
-  background: #ccc;
   width: 680px;
   height: 680px;
   position: relative;
@@ -814,7 +813,7 @@ body {
   width: 100%;
   height: 100%;
   content: "";
-  background: -webkit-gradient(radial, 340 50%, 400, 340 50%, 37, from(rgba(0, 0, 0, 0.4)), to(rgba(255, 255, 255, 0.35)));
+  background: -webkit-gradient(radial, 340 50%, 400, 340 50%, 37, from(rgba(0, 0, 0, 0.3)), to(rgba(255, 255, 255, 0.3)));
 }
 #wrapper #container:after {
   position: absolute;
@@ -982,6 +981,15 @@ body {
   border-radius: 4px;
   box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.2);
   color: #555;
+}
+#menu #chat-wrapper #chat-left #chat-msgs ul {
+  list-style-type: none;
+  list-style-position: inside;
+  margin: 0;
+  padding: 0;
+}
+#menu #chat-wrapper #chat-left #chat-msgs ul li .name {
+  font-weight: bold;
 }
 #menu #chat-wrapper #chat-left input {
   position: relative;

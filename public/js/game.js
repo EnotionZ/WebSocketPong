@@ -114,10 +114,57 @@ require(["js/faye_client", "js/spine"], function(client){
 	};
 
 
+
+	/**
+	 * Players and Spectators inherit from this
+	 */
+	var PersonController = Spine.Controller.sub({
+		registerChat: function() {
+			var self = this;
+			self.$message = $("#msg").keypress(function(e){
+				if(e.keyCode === 13) {
+					client.publish('/games/' + GAME_ID + '/msg', {
+							name: self.name,
+							message: self.$message.val()
+						});
+					self.$message.val("");
+				}
+			});
+		}
+	});
+
+
+	/**
+	 * Spectator Controller
+	 */
+	var SpectatorController = PersonController.sub({
+		init: function(opts){
+			this.id = opts.id;
+			this.pos = opts.pos;
+			this.name = opts.name;
+
+			this.showSpectatorNotice();
+
+			gc.$users.append("<li class='spectator'><span>"+this.name+"</span></li>");
+		},
+
+		showSpectatorNotice: function() {
+			var $notice = $("<div/>")
+				.addClass("notice")
+				.html("<span>Game is full, you will be a spectator</span>")
+				.appendTo($body)
+				.focus()
+				.click(function(){ $(this).remove(); });
+
+			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
+		}
+	});
+
+
 	/**
 	 * Player Controller
 	 */
-	var PlayerController = Spine.Controller.sub({
+	var PlayerController = PersonController.sub({
 		init: function(opts) {
 			var self = this;
 
@@ -128,6 +175,7 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.pos = opts.pos;
 			self.name = opts.name;
 			self.isPublisher = false;
+
 
 			// set orientation and initial position
 			self.coord = {left: BOARDSIZE/2, top: BOARDSIZE/2};
@@ -150,6 +198,8 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.render();
 
 			if(self.name) self.setLabel(self.name);
+
+			gc.$users.append("<li class='player-"+self.pos+"'><span>"+self.name+"</span></li>");
 		},
 
 		hitPaddle: function(lives, score) {
@@ -224,6 +274,8 @@ require(["js/faye_client", "js/spine"], function(client){
 				self.updatePaddle({left: info.left, top: info.top}, true);
 				client.publish('/games/' + GAME_ID + '/coord', info);
 			});
+
+			self.registerChat();
 		},
 		
 		setLabel: function(str) { this.$name.html(str); },
@@ -254,6 +306,11 @@ require(["js/faye_client", "js/spine"], function(client){
 	 * Game Controller
 	 */
 	var GameController = Spine.Controller.sub({
+		elements: {
+			"#chat-msgs-list":  "$chat",
+			"#chat-wrapper":    "$chatWrapper",
+			"#users":           "$users"
+		},
 		init: function(opts) {
 			var self = this;
 			var path = '/games/'+GAME_ID;
@@ -268,10 +325,12 @@ require(["js/faye_client", "js/spine"], function(client){
 			self.ballColor = 0xff000000;
 
 			self.players = [];      // Array of players index is position
-			self.specsArr = [];     // Array of spectators
+			self.spectators = [];
 
 			self.id = "p"+parseInt(Math.random()*999999,10);
 
+
+			client.subscribe(path + '/msg', function(info) { self.msgReceived(info); });
 
 			client.subscribe(path + '/join', function(info) { self.userJoined(info); });
 			client.subscribe(path + '/ball', function(info) { self.updateBall(info); });
@@ -280,9 +339,8 @@ require(["js/faye_client", "js/spine"], function(client){
 
 			self.showNameInput();
 
-			self.$users = $("#users");
 			$("#chat-trigger").click(function(){ 
-				if($("#chat-wrapper").hasClass('active')){
+				if(self.$chatWrapper.hasClass('active')){
 					$("#chat-left, #chat-right").fadeOut(400, function(){
 						$("#chat-container").show().animate({
 								height: '59px'
@@ -290,11 +348,11 @@ require(["js/faye_client", "js/spine"], function(client){
 								complete: function(){
 									$("#chat-helper").hide();
 									$("#chat-container").hide();
-									$("#chat-wrapper").animate({
+									self.$chatWrapper.animate({
 											width: '60px'
 										},{
 											complete: function(){
-												$("#chat-wrapper").removeClass('active');
+												self.$chatWrapper.removeClass('active');
 											}
 										}
 									);
@@ -303,7 +361,7 @@ require(["js/faye_client", "js/spine"], function(client){
 						);
 					});
 				}else{
-					$("#chat-wrapper").addClass('active').animate({
+					self.$chatWrapper.addClass('active').animate({
 							width: '560px'
 						},{
 							complete: function(){
@@ -323,6 +381,14 @@ require(["js/faye_client", "js/spine"], function(client){
 				return false;
 			});
 			$(window).resize(function(){ self.setOffset(); });
+		},
+
+		msgReceived: function(info) {
+			var name = info.name, msg = info.message;
+			this.$chat.append($("<li/>").append(
+				"<span class=\"name\">"+name+":</span>",
+				"<span class=\"message\">" + msg +"</span")
+			);
 		},
 
 
@@ -416,37 +482,31 @@ require(["js/faye_client", "js/spine"], function(client){
 					if(id === self.id) self.players[i].registerPublisher();
 				}
 				
-				self.$users.append("<li class='player-"+i+"'><span>"+name+"</span></li>");
 			}
 
-			// If you're not a player or spectator(yet), show spectator message
-			if(idArr.indexOf(self.id)<0 && self.specsArr.indexOf(self.id)<0) {
-				if(obj.gameEnded) self.showLoss(self.players[obj.loser.pos]);
-				else self.showSpectatorNotice();
-			}
-
-			// Generates spectator list
+			// creates spectator controllers
 			for(i=0; i<spectatorCount; i++) {
+				if(!specsData[i]) continue;
+
 				id = specsData[i].id;
 				name = specsData[i].name;
-				if(self.specsArr.indexOf(id)<0) {
-					self.specsArr.push(id);
-					self.$users.append("<li class='spectator'><span>"+name+"</span></li>");
+
+				if(!self.spectators[i]) {
+					if(obj.gameEnded) {
+						self.showLoss(self.players[obj.loser.pos]);
+					} else {
+						self.spectators[i] = new SpectatorController({
+							id: self.id,
+							name: name
+						});
+						if(id === self.id) self.spectators[i].registerChat();
+					}
 				}
 			}
 
+
 		},
 
-		showSpectatorNotice: function() {
-			var $notice = $("<div/>")
-				.addClass("notice")
-				.html("<span>Game is full, you will be a spectator</span>")
-				.appendTo($body)
-				.focus()
-				.click(function(){ $(this).remove(); });
-
-			$body.keypress(function(e) { if(e.keyCode === 13) $notice.remove(); });
-		},
 
 		showLoss: function(loser) {
 			var $msg = $("<div/>")
@@ -460,6 +520,9 @@ require(["js/faye_client", "js/spine"], function(client){
 	});
 
 	var gc = new GameController({el: "body"});
+
+	var canvas = document.getElementById("canvas");
+	var context = canvas.getContext("2d");
 	var processing = new Processing(document.getElementById("canvas"), Sketch);
 
 });
