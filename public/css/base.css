@@ -746,6 +746,24 @@ body {
   background: #23272c url('../images/bg.png') repeat 50% 0;
   box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.6);
 }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #d3d3d3;
+}
+label {
+  color: #d3d3d3;
+}
+a {
+  color: #60839f;
+  text-decoration: none;
+}
+.actions {
+  background: transparent;
+}
 #menu {
   position: absolute;
   z-index: 2;

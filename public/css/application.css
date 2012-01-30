@@ -746,6 +746,24 @@ body {
   background: #23272c url('../images/bg.png') repeat 50% 0;
   box-shadow: inset 0 0 200px rgba(0, 0, 0, 0.6);
 }
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #d3d3d3;
+}
+label {
+  color: #d3d3d3;
+}
+a {
+  color: #60839f;
+  text-decoration: none;
+}
+.actions {
+  background: transparent;
+}
 #menu {
   position: absolute;
   z-index: 2;
@@ -767,21 +785,30 @@ body {
 }
 #lobby {
   width: 600px;
+  display: table;
   position: absolute;
   left: 50%;
   top: 50%;
   margin: -250px 0 0 -300px;
+  background-color: #4b525d;
+  border-radius: 7px;
+  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+  border: 1px solid #31373f;
+}
+#lobby > div {
+  box-shadow: inset 1px 1px 0 #575d66;
 }
 #lobby #games_menu {
-  float: left;
-  margin: 10px;
-  padding: 10px;
+  display: table-cell;
+  padding: 20px;
+  background-color: #424952;
+  border-radius: 7px 0  0 7px;
+  border-right: 1px solid #31373f;
 }
 #lobby #new_game-container {
-  float: right;
-  width: 300px;
-  margin: 10px;
-  padding: 10px;
+  display: table-cell;
+  padding: 20px;
+  border-radius: 0 7px 7px 0;
 }
 #wrapper {
   height: 100%;
