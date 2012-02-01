@@ -271,8 +271,10 @@ require(["js/faye_client", "js/spine"], function(client){
 				// hour & minute + 1 in case it's midnight or 00 min, we don't get 0 timestamp
 				info.timestamp = (p.hour()+1)*(p.minute()+1)*p.millis();
 
-				self.updatePaddle({left: info.left, top: info.top}, true);
-				client.publish('/games/' + GAME_ID + '/coord', info);
+				if(self.updatePaddle) {
+					self.updatePaddle({left: info.left, top: info.top}, true);
+					client.publish('/games/' + GAME_ID + '/coord', info);
+				}
 			});
 
 			self.registerChat();
